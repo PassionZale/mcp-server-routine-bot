@@ -12,7 +12,7 @@ export class RoutineBotError extends Error {
 export class RoutineBotValidationError extends RoutineBotError {
   constructor(message: string, status: number, response: unknown) {
     super(message, status, response);
-    this.name = "RoutinBotValidationError";
+    this.name = "RoutineBotValidationError";
   }
 }
 
