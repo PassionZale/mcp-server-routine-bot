@@ -1,5 +1,6 @@
 import appConfig from "@/config/index.js";
 import { createRoutineBotError } from "./errors.js";
+import { TapdResponse } from "./types.js";
 
 type RequestOptions = {
   method?: string;
@@ -28,10 +29,10 @@ export function buildUrl(
   return url.toString();
 }
 
-export async function makeTapdRequest(
+export async function makeTapdRequest<T>(
   endpoint: string,
-  options: RequestOptions
-): Promise<unknown> {
+  options: RequestOptions = {}
+): Promise<TapdResponse<T>> {
   const {
     config: { tapd_access_token },
   } = appConfig;
@@ -58,7 +59,13 @@ export async function makeTapdRequest(
     throw createRoutineBotError(response.status, responseBody);
   }
 
-  return responseBody;
+  const data = responseBody as TapdResponse<T>;
+
+  if (data.status !== 1) {
+    throw createRoutineBotError(400, { message: data.info });
+  }
+
+  return data;
 }
 
 export async function makeJenkinsRequest() {
