@@ -1,4 +1,81 @@
-# mcp-server-routine-bot
+# MCP Server Routine Bot
+
+A Model Context Protocol (MCP) server for routine bot operations.
+
+## Features
+
+- Example MCP tools implementation
+- Example MCP resources implementation
+- Configurable server settings
+- Comprehensive test suite
+
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd mcp-server-routine-bot
+   ```
+
+2. Install dependencies using uv:
+   ```bash
+   uv sync
+   ```
+
+## Usage
+
+To start the MCP server, run:
+```bash
+uv run python -m src.mcp-server-routine-bot.server
+```
+
+## Development
+
+### Running Tests
+
+To run the test suite:
+```bash
+uv run pytest
+```
+
+### Code Formatting
+
+To format the code using black and isort:
+```bash
+uv run black .
+uv run isort .
+```
+
+## Configuration
+
+The server can be configured using environment variables or a `.env` file. See `src/mcp-server-routine-bot/config.py` for available configuration options.
+
+## Project Structure
+
+```
+mcp-server-routine-bot/
+├── pyproject.toml           # Project metadata and dependencies
+├── README.md                # This file
+├── src/                     # Source code
+│   └── mcp-server-routine-bot/  # Main package
+│       ├── __init__.py
+│       ├── server.py        # MCP Server main entry point
+│       ├── config.py        # Configuration management
+│       ├── tools/           # MCP tools
+│       │   ├── __init__.py
+│       │   ├── tool_a.py
+│       │   └── tool_b.py
+│       └── resources/       # MCP resources
+│           ├── __init__.py
+│           ├── resource_x.py
+│           └── resource_y.py
+└── tests/                   # Test suite
+    ├── __init__.py
+    ├── test_server.py       # Server tests
+    └── test_tools/          # Tool tests
+        ├── __init__.py
+        └── test_tool_a.py
+```
 
 MCP-Server-Routine-Bot 是一款为我个人打造的自动化助手，旨在将我从繁琐的日常重复工作中解放出来，专注于处理我个人的工作流程。
 
