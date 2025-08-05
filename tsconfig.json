@@ -1,8 +1,18 @@
 {
   "extends": "@tsconfig/node22/tsconfig.json",
   "compilerOptions": {
+     /* Bundler mode */
+    "resolveJsonModule": true,
+    "noEmit": true,
+
+    /* Alias */
+    "baseUrl": ".",
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@@/*": ["./*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]

@@ -15,4 +15,6 @@ class AppConfig {
   }
 }
 
-export default AppConfig;
+const appConfig = new AppConfig();
+
+export default appConfig;
