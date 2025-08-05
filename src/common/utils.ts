@@ -28,7 +28,7 @@ export function buildUrl(
   return url.toString();
 }
 
-async function makeTapdRequest(
+export async function makeTapdRequest(
   endpoint: string,
   options: RequestOptions
 ): Promise<unknown> {
@@ -61,7 +61,7 @@ async function makeTapdRequest(
   return responseBody;
 }
 
-async function makeJenkinsRequest() {
+export async function makeJenkinsRequest() {
   const {
     config: { jenkins_access_token },
   } = appConfig;
@@ -71,24 +71,3 @@ async function makeJenkinsRequest() {
     process.exit(1);
   }
 }
-
-export default {
-  makeTapdRequest,
-  makeJenkinsRequest,
-};
-
-// const url = "https://maps.googleapis.com/maps/api/geocode/json";
-// const body = new URLSearchParams({
-//   address,
-//   key: GOOGLE_MAPS_API_KEY
-// });
-
-// const response = await fetch(url, {
-//   method: "POST",
-//   headers: {
-//     "Content-Type": "application/x-www-form-urlencoded"
-//   },
-//   body: body.toString()
-// });
-
-// const data = await response.json() as GeocodeResponse;
