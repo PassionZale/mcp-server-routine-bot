@@ -1,4 +1,4 @@
-import appConfig from "../config/index.js";
+import appConfig from "@/config/index.js";
 import { createRoutineBotError } from "./errors.js";
 import { TapdResponse } from "./types.js";
 

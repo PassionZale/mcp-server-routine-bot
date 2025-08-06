@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "tsc --watch",
-    "build": "tsc && shx chmod +x dist/*.js",
+    "build": "tsc && tsc-alias && shx chmod +x dist/*.js",
     "prepare": "npm run build"
   },
   "repository": {
@@ -29,6 +29,7 @@
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^24.2.0",
     "shx": "^0.4.0",
+    "tsc-alias": "^1.8.16",
     "typescript": "^5.9.2"
   },
   "dependencies": {

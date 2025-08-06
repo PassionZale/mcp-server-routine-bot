@@ -1,5 +1,5 @@
-import { TapdUserInfo } from "../common/types.js";
-import { makeTapdRequest } from "../common/utils.js";
+import { TapdUserInfo } from "@/common/types.js";
+import { makeTapdRequest } from "@/common/utils.js";
 
 class AppConfig {
   tapd_access_token: string;

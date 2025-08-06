@@ -8,6 +8,9 @@
     "baseUrl": ".",
     "outDir": "./dist",
     "rootDir": "./src",
+    "paths": {
+      "@/*": ["./src/*"],
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
