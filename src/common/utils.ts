@@ -3,7 +3,6 @@ import { createRoutineBotError } from "./errors.js";
 import { TapdResponse } from "./types.js";
 
 type RequestOptions = {
-  method?: string;
   body?: unknown;
   headers?: Record<string, string>;
 };
@@ -30,6 +29,7 @@ export function buildUrl(
 }
 
 export async function makeTapdRequest<T>(
+  method: "GET" | "POST",
   endpoint: string,
   options: RequestOptions = {}
 ): Promise<TapdResponse<T>> {
@@ -48,7 +48,7 @@ export async function makeTapdRequest<T>(
   }
 
   const response = await fetch(`https://api.tapd.cn/${endpoint}`, {
-    method: options.method || "GET",
+    method,
     headers,
     body: options.body ? JSON.stringify(options.body) : undefined,
   });

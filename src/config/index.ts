@@ -23,8 +23,8 @@ class AppConfig {
   }
 
   private getTapdUserInfo() {
-    makeTapdRequest<TapdUserInfo>("/users/info").then((res) => {
-      this.tapd_userinfo = res.data;
+    makeTapdRequest<TapdUserInfo>("GET", "/users/info").then(({ data }) => {
+      this.tapd_userinfo = data;
     });
   }
 }
