@@ -45,7 +45,7 @@ export function isRoutineBotError(error: unknown): error is RoutineBotError {
 
 export function createRoutineBotError(
   status: number,
-  response: any
+  response?: any
 ): RoutineBotError {
   switch (status) {
     case 401:
