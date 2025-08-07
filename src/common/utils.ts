@@ -1,7 +1,7 @@
 import { createRoutineBotError } from "./errors.js";
 import { TapdResponse } from "./types.js";
 import AppConfig from "@/config/index.js";
-import MCPServer from "@/server.js"
+import MCPServer from "@/server.js";
 
 type RequestOptions = {
   body?: unknown;
@@ -18,24 +18,16 @@ async function parseResponseBody(response: Response): Promise<unknown> {
 
 export function buildUrl(
   endpoint: string,
-  params: Record<string, string | number | undefined>,
-  target: "tapd" | "jenkins" = "tapd"
+  params: Record<string, string | number | undefined>
 ): string {
-  const appConfig = new AppConfig();
+  const query = Object.entries(params)
+    .filter(([, value]) => value !== undefined)
+    .map(([key, value]) => {
+      return `${key}=${value}`;
+    })
+    .join("&");
 
-  const {
-    configs: { tapd_base_url, jenkins_base_url },
-  } = appConfig;
-
-  const baseUrl = target === "tapd" ? tapd_base_url : jenkins_base_url;
-
-  const url = new URL(`${baseUrl}/${endpoint}`);
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined) {
-      url.searchParams.append(key, value.toString());
-    }
-  });
-  return url.toString();
+  return `${endpoint}?${query}`;
 }
 
 export async function makeTapdRequest<T>(
@@ -44,7 +36,7 @@ export async function makeTapdRequest<T>(
   options: RequestOptions = {}
 ): Promise<TapdResponse<T>> {
   const appConfig = new AppConfig();
-	const mcpServer = MCPServer.getInstance()
+  const mcpServer = MCPServer.getInstance();
 
   const {
     configs: { tapd_nick, tapd_access_token, tapd_base_url },
@@ -85,9 +77,8 @@ export async function makeTapdRequest<T>(
   }
 
   const data = responseBody as TapdResponse<T>;
-	
 
-	mcpServer.log(JSON.stringify(data))
+  mcpServer.log(data);
 
   if (data.status !== 1) {
     throw createRoutineBotError(400, { message: data.info });

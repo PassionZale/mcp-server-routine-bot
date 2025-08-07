@@ -160,7 +160,7 @@ class MCPServer {
   }
 
   async log(
-    message: string,
+    data: unknown,
     level:
       | "debug"
       | "info"
@@ -182,13 +182,13 @@ class MCPServer {
     try {
       await this.server.sendLoggingMessage({
         level,
-        data: message,
+        data,
         logger: "routine-bot",
       });
     } catch (error) {
       console.error(
         "Failed to send logging message:",
-        `[${level.toUpperCase()}] ${message}`
+        `[${level.toUpperCase()}] ${(error as Error).message}`
       );
     }
   }
