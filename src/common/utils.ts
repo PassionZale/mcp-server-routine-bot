@@ -1,6 +1,7 @@
 import { createRoutineBotError } from "./errors.js";
 import { TapdResponse } from "./types.js";
 import AppConfig from "@/config/index.js";
+import server from "@/server.js";
 
 type RequestOptions = {
   body?: unknown;
@@ -16,10 +17,19 @@ async function parseResponseBody(response: Response): Promise<unknown> {
 }
 
 export function buildUrl(
-  baseUrl: string,
-  params: Record<string, string | number | undefined>
+  endpoint: string,
+  params: Record<string, string | number | undefined>,
+  target: "tapd" | "jenkins" = "tapd"
 ): string {
-  const url = new URL(baseUrl);
+  const appConfig = new AppConfig();
+
+  const {
+    configs: { tapd_base_url, jenkins_base_url },
+  } = appConfig;
+
+  const baseUrl = target === "tapd" ? tapd_base_url : jenkins_base_url;
+
+  const url = new URL(`${baseUrl}/${endpoint}`);
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined) {
       url.searchParams.append(key, value.toString());
@@ -36,18 +46,18 @@ export async function makeTapdRequest<T>(
   const appConfig = new AppConfig();
 
   const {
-    configs: { tapd_nick, tapd_access_token },
+    configs: { tapd_nick, tapd_access_token, tapd_base_url },
   } = appConfig;
-
-  if (!tapd_nick) {
-    throw createRoutineBotError(422, {
-      message: "TAPD_NICK environment variable is not set",
-    });
-  }
 
   if (!tapd_access_token) {
     throw createRoutineBotError(422, {
       message: "TAPD_ACCESS_TOKEN environment variable is not set",
+    });
+  }
+
+  if (!tapd_nick) {
+    throw createRoutineBotError(422, {
+      message: "TAPD_NICK environment variable is not set",
     });
   }
 
@@ -61,7 +71,7 @@ export async function makeTapdRequest<T>(
     headers["Authorization"] = `Bearer ${tapd_access_token}`;
   }
 
-  const response = await fetch(`https://api.tapd.cn/${endpoint}`, {
+  const response = await fetch(`${tapd_base_url}/${endpoint}`, {
     method,
     headers,
     body: options.body ? JSON.stringify(options.body) : undefined,
@@ -79,6 +89,11 @@ export async function makeTapdRequest<T>(
     throw createRoutineBotError(400, { message: data.info });
   }
 
+  server.log({
+    level: "info",
+    data,
+  });
+
   return data;
 }
 
@@ -86,13 +101,18 @@ export async function makeJenkinsRequest() {
   const appConfig = new AppConfig();
 
   const {
-    configs: { jenkins_access_token },
+    configs: { jenkins_base_url, jenkins_access_token },
   } = appConfig;
+
+  if (!jenkins_base_url) {
+    throw createRoutineBotError(422, {
+      message: "JENKINS_BASE_URL environment variable is not set",
+    });
+  }
 
   if (!jenkins_access_token) {
     throw createRoutineBotError(422, {
-      message:
-        "TAPD_ACCESSJENKINS_ACCESS_TOKEN_TOKEN environment variable is not set",
+      message: "JENKINS_ACCESS_TOKEN environment variable is not set",
     });
   }
 }

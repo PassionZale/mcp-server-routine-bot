@@ -10,22 +10,39 @@
   "scripts": {
     "dev": "tsc --watch",
     "build": "shx rm -rf dist && tsc && tsc-alias && shx chmod +x dist/*.js",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "inspector": "npx @modelcontextprotocol/inspector node /Users/zhanglei/Documents/www/mcp-server-routine-bot/dist/index.js /Users/zhanglei/Desktop"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/PassionZale/mcp-server-routine-bot.git"
   },
-  "keywords": [],
+  "keywords": [
+    "mcp",
+    "tapd",
+    "jenkins"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/PassionZale/mcp-server-routine-bot/issues"
   },
   "homepage": "https://github.com/PassionZale/mcp-server-routine-bot#readme",
   "files": [
-    "dist"
+    "dist",
+    "assets/",
+    "LICENSE",
+    "package.json",
+    "README.md"
   ],
+  "mcp": {
+    "logo": "./assets/logo.png",
+    "icons": {
+      "16": "./assets/icon-16x16.png",
+      "32": "./assets/icon-32x32.png"
+    }
+  },
   "devDependencies": {
+    "@modelcontextprotocol/inspector": "^0.16.2",
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^24.2.0",
     "shx": "^0.4.0",
