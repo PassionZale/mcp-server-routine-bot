@@ -36,7 +36,7 @@ export async function makeTapdRequest<T>(
   const appConfig = new AppConfig();
 
   const {
-    config: { tapd_nick, tapd_access_token },
+    configs: { tapd_nick, tapd_access_token },
   } = appConfig;
 
   if (!tapd_nick) {
@@ -86,7 +86,7 @@ export async function makeJenkinsRequest() {
   const appConfig = new AppConfig();
 
   const {
-    config: { jenkins_access_token },
+    configs: { jenkins_access_token },
   } = appConfig;
 
   if (!jenkins_access_token) {

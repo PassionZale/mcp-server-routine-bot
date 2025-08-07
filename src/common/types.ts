@@ -9,19 +9,18 @@ export interface TapdResponse<T> {
   data: T;
 }
 
-export interface TapdUserInfo {
-  /** 用户ID */
-  id: string;
-  /** 英文ID(nick和id都能作为用户的唯一标识) */
-  nick: string;
-  /** 中文名 */
+export interface ToolDefinition {
   name: string;
-  /** 头像 */
-  avatar: string;
-  /** 是否有效: 1-是;0-否 */
-  enabled: 1 | 0;
-  /** 状态: 1-在职;2-离职;3-冻结 */
-  status_id: 1 | 2 | 3;
-  /** 状态名 */
-  status_name: string;
+  description: string;
+  inputSchema: {
+    type: string;
+    properties: Record<string, any>;
+    required?: string[];
+  };
 }
+
+export const EMPTY_SCHEMA = {
+  type: "object" as const,
+  properties: {},
+  additionalProperties: false,
+} as const;

@@ -11,7 +11,7 @@ class AppConfig {
     this.jenkins_access_token = process.env.JENKINS_ACCESS_TOKEN || "";
   }
 
-  get config() {
+  get configs() {
     return {
       tapd_nick: this.tapd_nick,
       tapd_access_token: this.tapd_access_token,
