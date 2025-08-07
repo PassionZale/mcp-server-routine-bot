@@ -1,7 +1,7 @@
 import { createRoutineBotError } from "./errors.js";
 import { TapdResponse } from "./types.js";
 import AppConfig from "@/config/index.js";
-import server from "@/server.js";
+import MCPServer from "@/server.js"
 
 type RequestOptions = {
   body?: unknown;
@@ -44,6 +44,7 @@ export async function makeTapdRequest<T>(
   options: RequestOptions = {}
 ): Promise<TapdResponse<T>> {
   const appConfig = new AppConfig();
+	const mcpServer = MCPServer.getInstance()
 
   const {
     configs: { tapd_nick, tapd_access_token, tapd_base_url },
@@ -84,15 +85,13 @@ export async function makeTapdRequest<T>(
   }
 
   const data = responseBody as TapdResponse<T>;
+	
+
+	mcpServer.log(JSON.stringify(data))
 
   if (data.status !== 1) {
     throw createRoutineBotError(400, { message: data.info });
   }
-
-  server.log({
-    level: "info",
-    data,
-  });
 
   return data;
 }

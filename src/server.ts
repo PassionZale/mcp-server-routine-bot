@@ -1,10 +1,9 @@
-import path from "node:path";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   ListToolsRequestSchema,
   CallToolRequestSchema,
-  LoggingMessageNotification,
+  SetLevelRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { TAPD_TOOL_DEFINITIONS } from "./tools/tapd/index.js";
 import {
@@ -19,7 +18,25 @@ import { buildUrl, makeTapdRequest } from "./common/utils.js";
 import AppConfig from "@/config/index.js";
 
 class MCPServer {
+  private static instance: MCPServer | null = null;
+
+  private isInitialized: boolean = false;
+
+  private currentLogLevel: string = "info";
+
+  private logLevelPriority: Record<string, number> = {
+    debug: 0,
+    info: 1,
+    notice: 2,
+    warning: 3,
+    error: 4,
+    critical: 5,
+    alert: 6,
+    emergency: 7,
+  };
+
   private server: Server;
+
   private appConfig: AppConfig;
 
   constructor() {
@@ -29,29 +46,38 @@ class MCPServer {
       {
         name: "mcp-server-routine-bot",
         version: "1.0.0",
-        logo:
-          process.env.NODE_ENV === "development"
-            ? path.resolve("./assets/logo.png")
-            : "./assets/logo.png",
-        icons: {
-          "16":
-            process.env.NODE_ENV === "development"
-              ? path.resolve("./assets/icon-16x16.png")
-              : "./assets/icon-16x16.png",
-          "32":
-            process.env.NODE_ENV === "development"
-              ? path.resolve("./assets/icon-32x32.png")
-              : "./assets/icon-32x32.png",
-        },
       },
       {
         capabilities: {
+          logging: {},
           tools: {},
         },
       }
     );
+  }
+
+  static getInstance(): MCPServer {
+    if (!MCPServer.instance) {
+      MCPServer.instance = new MCPServer();
+    }
+    return MCPServer.instance;
+  }
+
+  async initialize(): Promise<void> {
+    if (this.isInitialized) return;
 
     this.setupHandlers();
+    this.isInitialized = true;
+  }
+
+  // 获取服务器实例（供内部使用）
+  getServerInstance(): Server {
+    return this.server;
+  }
+
+  // 重置实例（主要用于测试）
+  static reset(): void {
+    MCPServer.instance = null;
   }
 
   private setupHandlers(): void {
@@ -68,6 +94,18 @@ class MCPServer {
       const { name, arguments: args } = request.params;
 
       return this.executeTool(name as TapdToolNames & JenkinsToolNames, args);
+    });
+
+    // 实现日志级别更改
+    this.server.setRequestHandler(SetLevelRequestSchema, async (request) => {
+      const { level } = request.params;
+
+      this.currentLogLevel = level;
+
+      // 发送确认日志
+      await this.log(`Logging level set to: ${level}`, "info");
+
+      return {}; // 返回空对象表示成功
     });
   }
 
@@ -115,12 +153,44 @@ class MCPServer {
   }
 
   async start(): Promise<void> {
+    await this.initialize();
+
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
   }
 
-  log(args: LoggingMessageNotification["params"]): void {
-    this.server.sendLoggingMessage(args);
+  async log(
+    message: string,
+    level:
+      | "debug"
+      | "info"
+      | "notice"
+      | "warning"
+      | "error"
+      | "critical"
+      | "alert"
+      | "emergency" = "info"
+  ) {
+    // 检查当前级别是否应该输出这条日志
+    const currentPriority = this.logLevelPriority[this.currentLogLevel] || 1;
+    const messagePriority = this.logLevelPriority[level] || 1;
+
+    if (messagePriority < currentPriority) {
+      return; // 跳过低优先级的日志
+    }
+
+    try {
+      await this.server.sendLoggingMessage({
+        level,
+        data: message,
+        logger: "routine-bot",
+      });
+    } catch (error) {
+      console.error(
+        "Failed to send logging message:",
+        `[${level.toUpperCase()}] ${message}`
+      );
+    }
   }
 
   // 工具处理器实现
@@ -170,6 +240,4 @@ class MCPServer {
   }
 }
 
-const server = new MCPServer();
-
-export default server;
+export default MCPServer;

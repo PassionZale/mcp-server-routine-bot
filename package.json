@@ -8,17 +8,16 @@
     "mcp-server-routine-bot": "dist/index.js"
   },
   "scripts": {
-    "dev": "tsc --watch",
+    "dev": "dotenv -e .env -- mcp-inspector tsx src/index.ts",
     "build": "shx rm -rf dist && tsc && tsc-alias && shx chmod +x dist/*.js",
-    "prepare": "npm run build",
-    "inspector": "npx @modelcontextprotocol/inspector node /Users/zhanglei/Documents/www/mcp-server-routine-bot/dist/index.js /Users/zhanglei/Desktop"
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/PassionZale/mcp-server-routine-bot.git"
   },
   "keywords": [
-    "mcp",
+    "mcp-server",
     "tapd",
     "jenkins"
   ],
@@ -41,16 +40,17 @@
       "32": "./assets/icon-32x32.png"
     }
   },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.1"
+  },
   "devDependencies": {
     "@modelcontextprotocol/inspector": "^0.16.2",
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^24.2.0",
+    "dotenv-cli": "^10.0.0",
     "shx": "^0.4.0",
     "tsc-alias": "^1.8.16",
+    "tsx": "^4.20.3",
     "typescript": "^5.9.2"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.17.1",
-    "zod": "^3.25.76"
   }
 }
