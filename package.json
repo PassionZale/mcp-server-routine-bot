@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "tsc --watch",
-    "build": "tsc && tsc-alias && shx chmod +x dist/*.js",
+    "build": "shx rm -rf dist && tsc && tsc-alias && shx chmod +x dist/*.js",
     "prepare": "npm run build"
   },
   "repository": {
