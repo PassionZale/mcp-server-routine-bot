@@ -3,8 +3,11 @@
 ![Version](https://img.shields.io/npm/v/@code-sugar/mcp-server-routine-bot)
 ![License](https://img.shields.io/npm/l/@code-sugar/mcp-server-routine-bot)
 ![Downloads](https://img.shields.io/npm/dt/@code-sugar/mcp-server-routine-bot)
+![Status](https://img.shields.io/badge/status-in--development-orange)
 
 A Model Context Protocol (MCP) server designed to automate routine operations and enhance productivity through intelligent task automation.
+
+> ⚠️ **Note**: This project is currently under active development. Features may change, and some functionality may be incomplete or unstable.
 
 ## Overview
 
