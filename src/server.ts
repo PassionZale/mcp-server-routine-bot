@@ -235,7 +235,6 @@ class MCPServer {
   private async handleTapdIterations(args?: {
     workspace_id?: string;
     name?: string;
-    startdate?: string;
   }) {
     const workspace_id =
       args?.workspace_id || this.appConfig.tapd_default_workspace_id;
@@ -249,8 +248,7 @@ class MCPServer {
       buildUrl("iterations", {
         workspace_id,
         name: args?.name,
-        startdate: `LIKE<${args?.startdate ?? this.appConfig.current_year}>`,
-        order: encodeURIComponent("startdate=desc"),
+        order: encodeURIComponent("startdate desc"),
         fields: "id,name,workspace_id,startdate,enddate,status,description",
         limit: 200,
       })
@@ -270,18 +268,20 @@ class MCPServer {
   private async handleTapdIterationUserTasks(args?: {
     workspace_id?: string;
     iteration_id?: string;
+		name?: string;
     owner?: string;
   }) {
     const workspace_id =
       args?.workspace_id || this.appConfig.tapd_default_workspace_id;
 
-    if (workspace_id) {
+    if (!workspace_id) {
       return await this.handleTapdUserParticipantProjects();
     }
 
     if (!args?.iteration_id) {
       return await this.handleTapdIterations({
         workspace_id,
+				name: args?.name
       });
     }
 
