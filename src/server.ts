@@ -80,78 +80,6 @@ class MCPServer {
     MCPServer.instance = null;
   }
 
-  private setupHandlers(): void {
-    // 列出所有可用工具
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
-      tools: [
-        ...Object.values(TAPD_TOOL_DEFINITIONS),
-        ...Object.values(JENKINS_TOOL_DEFINITIONS),
-      ],
-    }));
-
-    // 处理工具调用
-    this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
-      const { name, arguments: args } = request.params;
-
-      return this.executeTool(name as TapdToolNames & JenkinsToolNames, args);
-    });
-
-    // 实现日志级别更改
-    this.server.setRequestHandler(SetLevelRequestSchema, async (request) => {
-      const { level } = request.params;
-
-      this.currentLogLevel = level;
-
-      // 发送确认日志
-      await this.log(`Logging level set to: ${level}`, "info");
-
-      return {}; // 返回空对象表示成功
-    });
-  }
-
-  private async executeTool(
-    toolName: TapdToolNames & JenkinsToolNames,
-    args: any
-  ) {
-    try {
-      switch (toolName) {
-        case TapdToolNames.TAPD_USERS_INFO:
-          return await this.handleTapdUsersInfo();
-
-        case TapdToolNames.TAPD_USER_PARTICIPANT_PROJECTS:
-          return await this.handleTapdUserParticipantProjects(args);
-
-        case JenkinsToolNames.JENKINS_CREATE_MERGE_REQUEST:
-          return await this.handleJenkinsCreateMergeRequest();
-
-        default:
-          throw new Error(`Tool ${toolName} not implemented`);
-      }
-    } catch (error) {
-      if (isRoutineBotError(error)) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error executing ${toolName}: ${error.message}`,
-            },
-          ],
-          isError: true,
-        };
-      }
-
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Error executing ${toolName} failed`,
-          },
-        ],
-        isError: true,
-      };
-    }
-  }
-
   async start(): Promise<void> {
     await this.initialize();
 
@@ -193,7 +121,84 @@ class MCPServer {
     }
   }
 
-  // 工具处理器实现
+  private setupHandlers(): void {
+    // 列出所有可用工具
+    this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
+      tools: [
+        ...Object.values(TAPD_TOOL_DEFINITIONS),
+        ...Object.values(JENKINS_TOOL_DEFINITIONS),
+      ],
+    }));
+
+    // 处理工具调用
+    this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+      const { name, arguments: args } = request.params;
+
+      return this.executeTool(name as TapdToolNames & JenkinsToolNames, args);
+    });
+
+    // 实现日志级别更改
+    this.server.setRequestHandler(SetLevelRequestSchema, async (request) => {
+      const { level } = request.params;
+
+      this.currentLogLevel = level;
+
+      // 发送确认日志
+      await this.log(`Logging level set to: ${level}`, "info");
+
+      return {}; // 返回空对象表示成功
+    });
+  }
+
+  private async executeTool(
+    toolName: TapdToolNames & JenkinsToolNames,
+    args: any
+  ) {
+    try {
+      switch (toolName) {
+        case TapdToolNames.TAPD_USERS_INFO:
+          return await this.handleTapdUsersInfo();
+
+        case TapdToolNames.TAPD_USER_PARTICIPANT_PROJECTS:
+          return await this.handleTapdUserParticipantProjects(args);
+
+        case TapdToolNames.TAPD_ITERATIONS:
+          return await this.handleTapdIterations(args);
+
+        case TapdToolNames.TAPD_ITERATION_USER_TASKS:
+          return await this.handleTapdIterationUserTasks(args);
+
+        case JenkinsToolNames.JENKINS_CREATE_MERGE_REQUEST:
+          return await this.handleJenkinsCreateMergeRequest();
+
+        default:
+          throw new Error(`Tool ${toolName} not implemented`);
+      }
+    } catch (error) {
+      if (isRoutineBotError(error)) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error executing ${toolName}: ${error.message}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error executing ${toolName} failed`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+
   private async handleTapdUsersInfo() {
     const { data } = await makeTapdRequest<TapdUsersInfo>("GET", "users/info");
 
@@ -208,11 +213,11 @@ class MCPServer {
     };
   }
 
-  private async handleTapdUserParticipantProjects(args: { nick: string }) {
+  private async handleTapdUserParticipantProjects(args?: { nick?: string }) {
     const { data } = await makeTapdRequest<TapdUserParticipantProjects>(
       "GET",
       buildUrl("workspaces/user_participant_projects", {
-        nick: args.nick || this.appConfig.tapd_nick,
+        nick: args?.nick || this.appConfig.tapd_nick,
       })
     );
 
@@ -224,6 +229,86 @@ class MCPServer {
         },
       ],
       isError: false,
+    };
+  }
+
+  private async handleTapdIterations(args?: {
+    workspace_id?: string;
+    name?: string;
+    startdate?: string;
+  }) {
+    const workspace_id =
+      args?.workspace_id || this.appConfig.tapd_default_workspace_id;
+
+    if (!workspace_id) {
+      return this.handleTapdUserParticipantProjects();
+    }
+
+    const { data } = await makeTapdRequest(
+      "GET",
+      buildUrl("iterations", {
+        workspace_id,
+        name: args?.name,
+        startdate: `LIKE<${args?.startdate ?? this.appConfig.current_year}>`,
+        order: encodeURIComponent("startdate=desc"),
+        fields: "id,name,workspace_id,startdate,enddate,status,description",
+        limit: 200,
+      })
+    );
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(data, null, 2),
+        },
+      ],
+      isError: false,
+    };
+  }
+
+  private async handleTapdIterationUserTasks(args?: {
+    workspace_id?: string;
+    iteration_id?: string;
+    owner?: string;
+  }) {
+    const workspace_id =
+      args?.workspace_id || this.appConfig.tapd_default_workspace_id;
+
+    if (workspace_id) {
+      return await this.handleTapdUserParticipantProjects();
+    }
+
+    if (!args?.iteration_id) {
+      return await this.handleTapdIterations({
+        workspace_id,
+      });
+    }
+
+    const nicks: string =
+      args.owner ?? this.appConfig.tapd_group_nicks.join("|");
+
+    const { data } = await makeTapdRequest(
+      "GET",
+      buildUrl("tasks", {
+        workspace_id: args.workspace_id,
+        iteration_id: args.iteration_id,
+        owner: nicks,
+        creator: nicks,
+        fields:
+          "id,name,creator,owner,priority_label,status,progress,completed,effort_completed,exceed,remain,effort",
+        limit: 200,
+      })
+    );
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(data, null, 2),
+        },
+      ],
+      isError: true,
     };
   }
 

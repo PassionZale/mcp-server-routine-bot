@@ -47,13 +47,15 @@ Configure the server with your platform credentials:
 
 ### Environment Variables
 
-| Variable               | Required | Default               | Description                |
-| ---------------------- | -------- | --------------------- | -------------------------- |
-| `TAPD_NICK`            | ✅       | -                     | Your TAPD account nickname |
-| `TAPD_BASE_URL`        | ❌       | `https://api.tapd.cn` | TAPD API base URL          |
-| `TAPD_ACCESS_TOKEN`    | ✅       | -                     | TAPD API access token      |
-| `JENKINS_BASE_URL`     | ✅       | -                     | Jenkins server base URL    |
-| `JENKINS_ACCESS_TOKEN` | ✅       | -                     | Jenkins API access token   |
+| Variable                    | Required | Default               | Description                    |
+| --------------------------- | -------- | --------------------- | ------------------------------ |
+| `TAPD_NICK`                 | ✅       | -                     | Your TAPD account nickname     |
+| `TAPD_GROUP_NICKS`           | ✅       | -                     | Your TAPD group nicknames      |
+| `TAPD_DEFAULT_WORKSPACE_ID` | ❌       | -                     | Your TAPD default workspace_id |
+| `TAPD_BASE_URL`             | ❌       | `https://api.tapd.cn` | TAPD API base URL              |
+| `TAPD_ACCESS_TOKEN`         | ✅       | -                     | TAPD API access token          |
+| `JENKINS_BASE_URL`          | ✅       | -                     | Jenkins server base URL        |
+| `JENKINS_ACCESS_TOKEN`      | ✅       | -                     | Jenkins API access token       |
 
 ## Development Guide
 

@@ -9,10 +9,10 @@
   },
   "scripts": {
     "build": "shx rm -rf dist && tsc && tsc-alias && shx chmod +x dist/*.js",
-		"build:watch": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
+    "build:watch": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
     "inspector": "dotenv -e .env -- mcp-inspector tsx src/index.ts",
     "prepare": "npm run build",
-		"release": "npm publish --registry https://registry.npmjs.org --access public"
+    "release": "npm publish --registry https://registry.npmjs.org --access public"
   },
   "repository": {
     "type": "git",
