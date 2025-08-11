@@ -16,6 +16,7 @@ import { JenkinsToolNames } from "./tools/jenkins/types.js";
 import { isRoutineBotError } from "./common/errors.js";
 import { buildUrl, makeTapdRequest } from "./common/utils.js";
 import AppConfig from "@/config/index.js";
+import dayjs from "dayjs";
 
 class MCPServer {
   private static instance: MCPServer | null = null;
@@ -168,8 +169,11 @@ class MCPServer {
         case TapdToolNames.TAPD_ITERATION_USER_TASKS:
           return await this.handleTapdIterationUserTasks(args);
 
-        case TapdToolNames.TAPD_TIMESHEETS:
-          return await this.handleTapdTimeSheets(args);
+        case TapdToolNames.TAPD_USER_ATTENDANCE_DAYS:
+          return await this.handleTapdUserAttendanceDays(args);
+
+        case TapdToolNames.TAPD_USER_TODO_STORY_OR_TASK_OR_BUG:
+          return await this.handleTapdUserTodStoryOrTaskOrBug(args);
 
         case JenkinsToolNames.JENKINS_CREATE_MERGE_REQUEST:
           return await this.handleJenkinsCreateMergeRequest();
@@ -300,7 +304,7 @@ class MCPServer {
         iteration_id: args.iteration_id,
         owner: nicks,
         creator: nicks,
-        order: encodeURIComponent('priority desc'),
+        order: encodeURIComponent("priority desc"),
         fields:
           "id,name,creator,owner,priority_label,status,progress,completed,effort_completed,exceed,remain,effort",
         limit: 200,
@@ -318,12 +322,80 @@ class MCPServer {
     };
   }
 
-  private async handleTapdTimeSheets(args?: {}) {
+  private async handleTapdUserAttendanceDays(args: {
+    workspace_id?: string;
+    spentdate?: string;
+  }) {
+    const workspace_id =
+      args?.workspace_id || this.appConfig.tapd_default_workspace_id;
+
+    if (!workspace_id) {
+      return await this.handleTapdUserParticipantProjects();
+    }
+
+    const spentdate =
+      args.spentdate ?? dayjs().subtract(1, "month").format("YYYY-MM");
+
+    const { data } = await makeTapdRequest(
+      "GET",
+      buildUrl("timesheets", {
+        workspace_id,
+        owner: this.appConfig.tapd_nick,
+        spentdate: `LIKE<${spentdate}>`,
+        order: encodeURIComponent("spentdate desc"),
+        limit: 200,
+      })
+    );
+
     return {
       content: [
         {
           type: "text",
-          text: JSON.stringify({}, null, 2),
+          text: JSON.stringify(data, null, 2),
+        },
+      ],
+      isError: true,
+    };
+  }
+
+  private async handleTapdUserTodStoryOrTaskOrBug(args: {
+    workspace_id?: string;
+    entity_type?: "story" | "task" | "bug";
+  }) {
+    const workspace_id =
+      args.workspace_id || this.appConfig.tapd_default_workspace_id;
+
+    if (!workspace_id) {
+      return await this.handleTapdUserParticipantProjects();
+    }
+
+    if (!args.entity_type) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: "请指定查询的代办类型：需求(story) 或 任务(task) 或 缺陷(bug)",
+          },
+        ],
+        isError: false,
+      };
+    }
+
+    const { data } = await makeTapdRequest(
+      "GET",
+      buildUrl(`user_oauth/get_user_todo_${args.entity_type}`, {
+        workspace_id,
+				user: this.appConfig.tapd_nick,
+				fields: "name,priority,severity,resolution,status,owner",
+        limit: 200,
+      })
+    );
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(data, null, 2),
         },
       ],
       isError: true,

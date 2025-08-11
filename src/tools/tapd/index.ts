@@ -102,34 +102,51 @@ export const TAPD_TOOL_DEFINITIONS: Record<TapdToolNames, ToolDefinition> = {
       },
     },
   },
-  [TapdToolNames.TAPD_TIMESHEETS]: {
-    name: TapdToolNames.TAPD_TIMESHEETS,
-    description: "返回指定时间段的工时（用于统计上月工时汇总）",
-    inputSchema: EMPTY_SCHEMA,
+  [TapdToolNames.TAPD_USER_ATTENDANCE_DAYS]: {
+    name: TapdToolNames.TAPD_USER_ATTENDANCE_DAYS,
+    description: `
+			获取 TAPD 用户指定月份内的工时登记天数或出勤天数，月份格式为 YYYY-MM（例如 2025-07）。
+			
+			!!! IMPORTANT !!!
+			- 如果 workspace_id 没有给定，则使用环境变量 TAPD_DEFAULT_WORKSPACE_ID
+			- 如果 spentdate 没有给定，则默认使用上个月
+			- 拿到返回值，按照 spentdate 去重并计算出总数 count
+			- 最终返回去重后的总数，返回示例：{spenddate} 共出勤 {count} 天
+			`,
+    inputSchema: {
+      type: "object",
+      properties: {
+        workspace_id: {
+          type: "string",
+          description: "项目ID",
+        },
+        spentdate: {
+          type: "string",
+          description: "月份（格式 YYYY-MM，例如 2025-07）",
+        },
+      },
+    },
   },
-  [TapdToolNames.TAPD_USER_TODO_TASK]: {
-    name: TapdToolNames.TAPD_USER_TODO_TASK,
-    description: "返回用户待办的任务（分页显示，默认一页30条）",
-    inputSchema: EMPTY_SCHEMA,
-  },
-  [TapdToolNames.TAPD_USER_TODO_BUG]: {
-    name: TapdToolNames.TAPD_USER_TODO_BUG,
-    description: "返回用户待办的缺陷（分页显示，默认一页30条）",
-    inputSchema: EMPTY_SCHEMA,
+  [TapdToolNames.TAPD_USER_TODO_STORY_OR_TASK_OR_BUG]: {
+    name: TapdToolNames.TAPD_USER_TODO_STORY_OR_TASK_OR_BUG,
+    description: `
+			获取 TAPD 用户代办的需求（story）或任务（task）或缺陷（bug）。
+
+			!!! IMPORTANT !!!
+			- 如果 workspace_id 没有给定，则使用环境变量 TAPD_DEFAULT_WORKSPACE_ID
+		`,
+    inputSchema: {
+      type: "object",
+      properties: {
+        workspace_id: {
+          type: "string",
+          description: "项目ID",
+        },
+        entity_type: {
+          type: "string",
+          description: " 待办类型，需求(story) 或 任务(task) 或 缺陷(bug)",
+        },
+      },
+    },
   },
 };
-
-/**
- * 多维表 内容填充
- *
- * - 先查询迭代的自定义字段
- * 	- https://open.tapd.cn/document/api-doc/API%E6%96%87%E6%A1%A3/api_reference/iteration/get_iteration_custom_fields_settings.html
- *
- * - 通过 workspace_id + name(迭代标题，支持模糊匹配) 查询出迭代
- * 	- https://open.tapd.cn/document/api-doc/API%E6%96%87%E6%A1%A3/api_reference/iteration/get_iterations.html
- * 	- { id, name, workspace_id, description, creator }
- *
- * - 通过 workspace_id + iteration_id + owner(枚举) 查询成员的任务列表
- * 	- https://open.tapd.cn/document/api-doc/API%E6%96%87%E6%A1%A3/api_reference/task/get_tasks.html
- * 	-
- */

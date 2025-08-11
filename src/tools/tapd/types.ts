@@ -1,11 +1,10 @@
 export enum TapdToolNames {
   TAPD_USERS_INFO = "tapd_users_info",
   TAPD_USER_PARTICIPANT_PROJECTS = "tapd_user_participant_projects",
-	TAPD_ITERATIONS = "tapd_iterations",
-	TAPD_ITERATION_USER_TASKS = "tapd_iteration_user_tasks",
-	TAPD_TIMESHEETS = "tapd_timesheets",
-	TAPD_USER_TODO_TASK = 'tapd_user_todo_task',
-	TAPD_USER_TODO_BUG = "tapd_user_todo_bug"
+  TAPD_ITERATIONS = "tapd_iterations",
+  TAPD_ITERATION_USER_TASKS = "tapd_iteration_user_tasks",
+  TAPD_USER_ATTENDANCE_DAYS = "tapd_user_attendance_days",
+  TAPD_USER_TODO_STORY_OR_TASK_OR_BUG = "tapd_user_todo_story_or_task_or_bug",
 }
 
 export interface TapdUsersInfo {
