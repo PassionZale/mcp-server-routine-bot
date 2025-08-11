@@ -168,6 +168,9 @@ class MCPServer {
         case TapdToolNames.TAPD_ITERATION_USER_TASKS:
           return await this.handleTapdIterationUserTasks(args);
 
+        case TapdToolNames.TAPD_TIMESHEETS:
+          return await this.handleTapdTimeSheets(args);
+
         case JenkinsToolNames.JENKINS_CREATE_MERGE_REQUEST:
           return await this.handleJenkinsCreateMergeRequest();
 
@@ -268,7 +271,7 @@ class MCPServer {
   private async handleTapdIterationUserTasks(args?: {
     workspace_id?: string;
     iteration_id?: string;
-		name?: string;
+    name?: string;
     owner?: string;
   }) {
     const workspace_id =
@@ -281,12 +284,14 @@ class MCPServer {
     if (!args?.iteration_id) {
       return await this.handleTapdIterations({
         workspace_id,
-				name: args?.name
+        name: args?.name,
       });
     }
 
     const nicks: string =
-      args.owner ?? this.appConfig.tapd_group_nicks.join("|");
+      args.owner ?? this.appConfig.tapd_group_nicks
+        ? this.appConfig.tapd_group_nicks.join("|")
+        : this.appConfig.tapd_nick;
 
     const { data } = await makeTapdRequest(
       "GET",
@@ -295,6 +300,7 @@ class MCPServer {
         iteration_id: args.iteration_id,
         owner: nicks,
         creator: nicks,
+        order: encodeURIComponent('priority desc'),
         fields:
           "id,name,creator,owner,priority_label,status,progress,completed,effort_completed,exceed,remain,effort",
         limit: 200,
@@ -306,6 +312,18 @@ class MCPServer {
         {
           type: "text",
           text: JSON.stringify(data, null, 2),
+        },
+      ],
+      isError: true,
+    };
+  }
+
+  private async handleTapdTimeSheets(args?: {}) {
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({}, null, 2),
         },
       ],
       isError: true,

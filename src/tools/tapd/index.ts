@@ -24,7 +24,7 @@ export const TAPD_TOOL_DEFINITIONS: Record<TapdToolNames, ToolDefinition> = {
   [TapdToolNames.TAPD_ITERATIONS]: {
     name: TapdToolNames.TAPD_ITERATIONS,
     description: `
-		获取 TAPD 指定项目的迭代列表，不分页，最多查询 200，默认按迭代开始日期降序，只查询今年的数据。
+		获取 TAPD 指定项目的迭代列表，不分页，最多查询 200，默认按迭代开始日期降序。
 
 		!!! IMPORTANT !!!
 		- 如果 workspace_id 没有给定，则使用环境变量 TAPD_DEFAULT_WORKSPACE_ID
@@ -47,7 +47,7 @@ export const TAPD_TOOL_DEFINITIONS: Record<TapdToolNames, ToolDefinition> = {
   [TapdToolNames.TAPD_ITERATION_USER_TASKS]: {
     name: TapdToolNames.TAPD_ITERATION_USER_TASKS,
     description: `
-		获取 TAPD 迭代中成员或成员组的任务，根据查询的结果进行总结，给出清晰的数据统计概览。
+		获取 TAPD 迭代中成员或成员组的任务，根据查询的结果进行总结，给出清晰的数据统计概览，常用于每周进度汇总。
 
 		!!! IMPORTANT !!!
 		- 如果 workspace_id 没有给定，则使用环境变量 TAPD_DEFAULT_WORKSPACE_ID
@@ -97,7 +97,7 @@ export const TAPD_TOOL_DEFINITIONS: Record<TapdToolNames, ToolDefinition> = {
         owner: {
           type: "string",
           description:
-            "任务拥有者，可以传递多个成员名称，多个成员名称使用 | 拼接",
+            "任务拥有者，可以传递多个成员昵称，多个成员昵称使用 | 拼接",
         },
       },
     },

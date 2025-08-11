@@ -50,7 +50,7 @@ Configure the server with your platform credentials:
 | Variable                    | Required | Default               | Description                    |
 | --------------------------- | -------- | --------------------- | ------------------------------ |
 | `TAPD_NICK`                 | ✅       | -                     | Your TAPD account nickname     |
-| `TAPD_GROUP_NICKS`           | ✅       | -                     | Your TAPD group nicknames      |
+| `TAPD_GROUP_NICKS`          | ❌       | -                     | Your TAPD group nicknames      |
 | `TAPD_DEFAULT_WORKSPACE_ID` | ❌       | -                     | Your TAPD default workspace_id |
 | `TAPD_BASE_URL`             | ❌       | `https://api.tapd.cn` | TAPD API base URL              |
 | `TAPD_ACCESS_TOKEN`         | ✅       | -                     | TAPD API access token          |
