@@ -179,6 +179,9 @@ class MCPServer {
         case TapdToolNames.TAPD_USER_TODO_STORY_OR_BUG:
           return await this.handleTapdUserTodStoryOrBug(args);
 
+        case JenkinsToolNames.JENKINS_JOB_LIST:
+          return await this.handleJenkinsJobList();
+
         case JenkinsToolNames.JENKINS_JOB_BUILD:
           return await this.handleJenkinsJobBuild(args);
 
@@ -396,50 +399,35 @@ class MCPServer {
     };
   }
 
-  private async handleJenkinsJobBuild(args: { jobName?: string }) {
+  private async handleJenkinsJobList() {
     const { jobs } = await makeJenkinsRequest<JenkinsJobList>(
       "GET",
       "api/json?tree=jobs[name]"
     );
 
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(jobs, null, 2),
+        },
+      ],
+      isError: false,
+    };
+  }
+
+  private async handleJenkinsJobBuild(args: { jobName?: string }) {
     if (!args.jobName) {
-      return {
-        content: [
-          {
-            type: "text",
-            text:
-              "请选择一个 Jenkins Job 再次调用 `jenkins-job-build`，可用 Job 列表如下：\n" +
-              jobs.map((j: any) => `- ${j.name}`).join("\n"),
-          },
-        ],
-        isError: false,
-      };
+      return this.handleJenkinsJobList();
     }
 
-    const found = jobs.find((j: any) => j.name === args.jobName);
-
-    if (!found) {
-      return {
-        content: [
-          {
-            type: "text",
-            text:
-              "**没有找到指定的 Jenkins Job**\n" +
-              "请选择一个 Jenkins Job，再次调用 `jenkins-job-build`，可用 Job 列表如下：\n" +
-              jobs.map((j: any) => `- ${j.name}`).join("\n"),
-          },
-        ],
-        isError: false,
-      };
-    }
-
-    await makeJenkinsRequest("POST", `job/${found.name}/build`);
+    await makeJenkinsRequest("POST", `job/${args.jobName}/build`);
 
     return {
       content: [
         {
           type: "text",
-          text: `✅ Jenkins Job "${found.name}" 构建已触发。`,
+          text: `✅ Jenkins Job "${args.jobName}" 构建已触发。\n详情链接：${this.appConfig.jenkins_base_url}/job/${args.jobName}`,
         },
       ],
       isError: false,

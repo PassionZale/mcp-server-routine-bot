@@ -1,5 +1,6 @@
 export enum JenkinsToolNames {
-  JENKINS_JOB_BUILD = "jenkins-job-build",
+	JENKINS_JOB_LIST = "jenkins_job_list",
+  JENKINS_JOB_BUILD = "jenkins_job_build",
 }
 
 export interface JenkinsJobList {
