@@ -127,13 +127,14 @@ export const TAPD_TOOL_DEFINITIONS: Record<TapdToolNames, ToolDefinition> = {
       },
     },
   },
-  [TapdToolNames.TAPD_USER_TODO_STORY_OR_TASK_OR_BUG]: {
-    name: TapdToolNames.TAPD_USER_TODO_STORY_OR_TASK_OR_BUG,
+  [TapdToolNames.TAPD_USER_TODO_STORY_OR_BUG]: {
+    name: TapdToolNames.TAPD_USER_TODO_STORY_OR_BUG,
     description: `
-			获取 TAPD 用户代办的需求（story）或任务（task）或缺陷（bug）。
+			获取 TAPD 用户代办的需求/任务(story) 或 缺陷(bug)。
 
 			!!! IMPORTANT !!!
 			- 如果 workspace_id 没有给定，则使用环境变量 TAPD_DEFAULT_WORKSPACE_ID
+			- 待办类型 枚举值，需求/任务：story， 缺陷：bug。如果未指定，则引导用户指定
 		`,
     inputSchema: {
       type: "object",
@@ -144,7 +145,7 @@ export const TAPD_TOOL_DEFINITIONS: Record<TapdToolNames, ToolDefinition> = {
         },
         entity_type: {
           type: "string",
-          description: " 待办类型，需求(story) 或 任务(task) 或 缺陷(bug)",
+          description: " 待办类型，用户代办的需求/任务(story) 或 缺陷(bug)",
         },
       },
     },

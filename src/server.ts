@@ -172,8 +172,8 @@ class MCPServer {
         case TapdToolNames.TAPD_USER_ATTENDANCE_DAYS:
           return await this.handleTapdUserAttendanceDays(args);
 
-        case TapdToolNames.TAPD_USER_TODO_STORY_OR_TASK_OR_BUG:
-          return await this.handleTapdUserTodStoryOrTaskOrBug(args);
+        case TapdToolNames.TAPD_USER_TODO_STORY_OR_BUG:
+          return await this.handleTapdUserTodStoryOrBug(args);
 
         case JenkinsToolNames.JENKINS_CREATE_MERGE_REQUEST:
           return await this.handleJenkinsCreateMergeRequest();
@@ -225,6 +225,7 @@ class MCPServer {
       "GET",
       buildUrl("workspaces/user_participant_projects", {
         nick: args?.nick || this.appConfig.tapd_nick,
+        fields: "id,name,description",
       })
     );
 
@@ -358,9 +359,9 @@ class MCPServer {
     };
   }
 
-  private async handleTapdUserTodStoryOrTaskOrBug(args: {
+  private async handleTapdUserTodStoryOrBug(args: {
     workspace_id?: string;
-    entity_type?: "story" | "task" | "bug";
+    entity_type?: "story" | "bug";
   }) {
     const workspace_id =
       args.workspace_id || this.appConfig.tapd_default_workspace_id;
@@ -374,7 +375,7 @@ class MCPServer {
         content: [
           {
             type: "text",
-            text: "请指定查询的代办类型：需求(story) 或 任务(task) 或 缺陷(bug)",
+            text: "请指定查询的代办类型：需求/任务(story) 或 缺陷(bug)",
           },
         ],
         isError: false,
@@ -385,8 +386,9 @@ class MCPServer {
       "GET",
       buildUrl(`user_oauth/get_user_todo_${args.entity_type}`, {
         workspace_id,
-				user: this.appConfig.tapd_nick,
-				fields: "name,priority,severity,resolution,status,owner",
+        user: this.appConfig.tapd_nick,
+        fields: "name,priority,severity,resolution,status,owner",
+				order: encodeURIComponent('priority desc'),
         limit: 200,
       })
     );
