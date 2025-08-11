@@ -40,6 +40,7 @@ Configure the server with your platform credentials:
         "TAPD_BASE_URL": "https://api.tapd.cn",
         "TAPD_ACCESS_TOKEN": "your_tapd_access_token",
         "JENKINS_BASE_URL": "your_jenkins_base_url",
+				"JENKINS_USERNAME": "your_jenkins_username",
         "JENKINS_ACCESS_TOKEN": "your_jenkins_access_token"
       }
     }
@@ -114,6 +115,7 @@ For debugging and inspection:
            "TAPD_BASE_URL": "https://api.tapd.cn",
            "TAPD_ACCESS_TOKEN": "your_tapd_access_token",
            "JENKINS_BASE_URL": "your_jenkins_base_url",
+					 "JENKINS_USERNAME": "your_jenkins_username",
            "JENKINS_ACCESS_TOKEN": "your_jenkins_access_token"
          }
        }
@@ -164,6 +166,7 @@ For development with Hot Reload support:
            "TAPD_BASE_URL": "https://api.tapd.cn",
            "TAPD_ACCESS_TOKEN": "your_tapd_access_token",
            "JENKINS_BASE_URL": "your_jenkins_base_url",
+					 "JENKINS_USERNAME": "your_jenkins_username",
            "JENKINS_ACCESS_TOKEN": "your_jenkins_access_token"
          }
        }
