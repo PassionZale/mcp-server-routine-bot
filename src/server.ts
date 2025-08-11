@@ -13,14 +13,24 @@ import {
 } from "./tools/tapd/types.js";
 import { JENKINS_TOOL_DEFINITIONS } from "./tools/jenkins/index.js";
 import { JenkinsJobList, JenkinsToolNames } from "./tools/jenkins/types.js";
-import { isRoutineBotError } from "./common/errors.js";
 import {
   buildUrl,
+  getFolderName,
+  getGitBranch,
+  getGitProjectNameFromRemote,
+  makeGitlabRequest,
   makeJenkinsRequest,
   makeTapdRequest,
 } from "./common/utils.js";
 import AppConfig from "@/config/index.js";
 import dayjs from "dayjs";
+import {
+  GitlabMergeReqeust,
+  GitlabProject,
+  GitlabToolNames,
+} from "./tools/gitlab/types.js";
+import { GITLAB_TOOL_DEFINITIONS } from "./tools/gitlab/index.js";
+import { createRoutineBotError } from "./common/errors.js";
 
 class MCPServer {
   private static instance: MCPServer | null = null;
@@ -132,6 +142,7 @@ class MCPServer {
       tools: [
         ...Object.values(TAPD_TOOL_DEFINITIONS),
         ...Object.values(JENKINS_TOOL_DEFINITIONS),
+        ...Object.values(GITLAB_TOOL_DEFINITIONS),
       ],
     }));
 
@@ -184,6 +195,9 @@ class MCPServer {
 
         case JenkinsToolNames.JENKINS_JOB_BUILD:
           return await this.handleJenkinsJobBuild(args);
+
+        case GitlabToolNames.GITLAB_CREATE_MERGE_REQUEST:
+          return await this.handleGitlabCreateMergeRequest(args);
 
         default:
           throw new Error(`Tool ${toolName} not implemented`);
@@ -428,6 +442,106 @@ class MCPServer {
         {
           type: "text",
           text: `✅ Jenkins Job "${args.jobName}" 构建已触发。\n详情链接：${this.appConfig.jenkins_base_url}/job/${args.jobName}`,
+        },
+      ],
+      isError: false,
+    };
+  }
+
+  private async handleGitlabCreateMergeRequest(args: {
+    projectId?: string;
+    projectName?: string;
+    sourceBranch?: string;
+    targetBranch?: string;
+  }) {
+    let { projectId, projectName, sourceBranch, targetBranch } = args;
+
+    let project: GitlabProject | null = null;
+
+    if (this.appConfig.mcp_has_local_context) {
+      if (!projectName) {
+        projectName = getGitProjectNameFromRemote() || getFolderName();
+      }
+      if (!sourceBranch) {
+        sourceBranch = getGitBranch();
+      }
+    }
+
+    if (projectId) {
+      project = await makeGitlabRequest<GitlabProject>(
+        "GET",
+        `projects/${projectId}`
+      );
+    } else {
+      if (!projectName) {
+        throw createRoutineBotError(422, "项目名称未指定");
+      }
+
+      const projects = await makeGitlabRequest<GitlabProject[]>(
+        "GET",
+        buildUrl("projects", {
+          search: projectName,
+        })
+      );
+
+      if (!projects.length) {
+        throw createRoutineBotError(400, `未找到项目: ${projectName}`);
+      }
+
+      if (projects.length === 1) {
+        project = projects[0];
+      }
+
+      if (projects.length > 1) {
+        return {
+          content: [
+            {
+              type: "text",
+              text:
+                `找到多个项目，请选择一个：\n` +
+                projects
+                  .map(
+                    (p, i) =>
+                      `${i + 1}. ${p.name_with_namespace} (${p.web_url})`
+                  )
+                  .join("\n"),
+            },
+          ],
+          isError: false,
+        };
+      }
+    }
+
+    if (!project) {
+      throw createRoutineBotError(422, `未找到对应项目`);
+    }
+
+    if (!sourceBranch) {
+      throw createRoutineBotError(422, `源分支名称未指定`);
+    }
+
+    if (!targetBranch) {
+      targetBranch = project.default_branch || "main";
+    }
+
+    // === 创建 MR ===
+    const mr = await makeGitlabRequest<GitlabMergeReqeust>(
+      "POST",
+      `projects/${project.id}/merge_requests`,
+      {
+        body: {
+          source_branch: sourceBranch,
+          target_branch: targetBranch,
+          title: `Merge ${sourceBranch} into ${targetBranch}`,
+        },
+      }
+    );
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: `✅ Merge Request 已创建。\n详情链接：${mr.web_url}`,
         },
       ],
       isError: false,
