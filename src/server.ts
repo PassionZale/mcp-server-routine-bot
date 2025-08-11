@@ -502,7 +502,7 @@ class MCPServer {
                 projects
                   .map(
                     (p, i) =>
-                      `${i + 1}. ${p.name_with_namespace} (${p.web_url})`
+                      `${p.id}: ${p.name_with_namespace} (${p.web_url})`
                   )
                   .join("\n"),
             },
@@ -532,7 +532,7 @@ class MCPServer {
         body: {
           source_branch: sourceBranch,
           target_branch: targetBranch,
-          title: `Merge ${sourceBranch} into ${targetBranch}`,
+          title: `Merge ${sourceBranch} into ${targetBranch} Via mcp-server-routine-bot`,
         },
       }
     );
