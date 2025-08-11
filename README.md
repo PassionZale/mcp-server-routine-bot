@@ -57,6 +57,7 @@ Configure the server with your platform credentials:
 | `TAPD_BASE_URL`             | ❌       | `https://api.tapd.cn` | TAPD API base URL              |
 | `TAPD_ACCESS_TOKEN`         | ✅       | -                     | TAPD API access token          |
 | `JENKINS_BASE_URL`          | ✅       | -                     | Jenkins server base URL        |
+| `JENKINS_USERNAME`          | ✅       | -                     | Jenkins username               |
 | `JENKINS_ACCESS_TOKEN`      | ✅       | -                     | Jenkins API access token       |
 
 ## Development Guide

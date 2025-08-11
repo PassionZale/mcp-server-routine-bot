@@ -1,13 +1,22 @@
-import { ToolDefinition, EMPTY_SCHEMA } from "@/common/types.js";
+import { ToolDefinition } from "@/common/types.js";
 import { JenkinsToolNames } from "./types.js";
 
 export const JENKINS_TOOL_DEFINITIONS: Record<
   JenkinsToolNames,
   ToolDefinition
 > = {
-  [JenkinsToolNames.JENKINS_CREATE_MERGE_REQUEST]: {
-    name: JenkinsToolNames.JENKINS_CREATE_MERGE_REQUEST,
-    description: "创建 merge request",
-    inputSchema: EMPTY_SCHEMA,
+  [JenkinsToolNames.JENKINS_JOB_BUILD]: {
+    name: JenkinsToolNames.JENKINS_JOB_BUILD,
+    description:
+      "触发 Jenkins Job 构建。如果 jobName 未提供，将先返回 Jenkins Job 列表让用户选择。",
+    inputSchema: {
+      type: "object",
+      properties: {
+        jobName: {
+          type: "string",
+          description: "要构建的 Jenkins Job 名称",
+        },
+      },
+    },
   },
 };

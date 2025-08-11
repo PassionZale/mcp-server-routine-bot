@@ -12,9 +12,13 @@ import {
   TapdUsersInfo,
 } from "./tools/tapd/types.js";
 import { JENKINS_TOOL_DEFINITIONS } from "./tools/jenkins/index.js";
-import { JenkinsToolNames } from "./tools/jenkins/types.js";
+import { JenkinsJobList, JenkinsToolNames } from "./tools/jenkins/types.js";
 import { isRoutineBotError } from "./common/errors.js";
-import { buildUrl, makeTapdRequest } from "./common/utils.js";
+import {
+  buildUrl,
+  makeJenkinsRequest,
+  makeTapdRequest,
+} from "./common/utils.js";
 import AppConfig from "@/config/index.js";
 import dayjs from "dayjs";
 
@@ -175,30 +179,18 @@ class MCPServer {
         case TapdToolNames.TAPD_USER_TODO_STORY_OR_BUG:
           return await this.handleTapdUserTodStoryOrBug(args);
 
-        case JenkinsToolNames.JENKINS_CREATE_MERGE_REQUEST:
-          return await this.handleJenkinsCreateMergeRequest();
+        case JenkinsToolNames.JENKINS_JOB_BUILD:
+          return await this.handleJenkinsJobBuild(args);
 
         default:
           throw new Error(`Tool ${toolName} not implemented`);
       }
     } catch (error) {
-      if (isRoutineBotError(error)) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error executing ${toolName}: ${error.message}`,
-            },
-          ],
-          isError: true,
-        };
-      }
-
       return {
         content: [
           {
             type: "text",
-            text: `Error executing ${toolName} failed`,
+            text: `Error executing ${toolName}: ${(error as Error).message}`,
           },
         ],
         isError: true,
@@ -388,7 +380,7 @@ class MCPServer {
         workspace_id,
         user: this.appConfig.tapd_nick,
         fields: "name,priority,severity,resolution,status,owner",
-				order: encodeURIComponent('priority desc'),
+        order: encodeURIComponent("priority desc"),
         limit: 200,
       })
     );
@@ -404,15 +396,53 @@ class MCPServer {
     };
   }
 
-  private async handleJenkinsCreateMergeRequest() {
+  private async handleJenkinsJobBuild(args: { jobName?: string }) {
+    const { jobs } = await makeJenkinsRequest<JenkinsJobList>(
+      "GET",
+      "api/json?tree=jobs[name]"
+    );
+
+    if (!args.jobName) {
+      return {
+        content: [
+          {
+            type: "text",
+            text:
+              "请选择一个 Jenkins Job 再次调用 `jenkins-job-build`，可用 Job 列表如下：\n" +
+              jobs.map((j: any) => `- ${j.name}`).join("\n"),
+          },
+        ],
+        isError: false,
+      };
+    }
+
+    const found = jobs.find((j: any) => j.name === args.jobName);
+
+    if (!found) {
+      return {
+        content: [
+          {
+            type: "text",
+            text:
+              "**没有找到指定的 Jenkins Job**\n" +
+              "请选择一个 Jenkins Job，再次调用 `jenkins-job-build`，可用 Job 列表如下：\n" +
+              jobs.map((j: any) => `- ${j.name}`).join("\n"),
+          },
+        ],
+        isError: false,
+      };
+    }
+
+    await makeJenkinsRequest("POST", `job/${found.name}/build`);
+
     return {
       content: [
         {
           type: "text",
-          text: "Tool jenkins not implemented",
+          text: `✅ Jenkins Job "${found.name}" 构建已触发。`,
         },
       ],
-      isError: true,
+      isError: false,
     };
   }
 }

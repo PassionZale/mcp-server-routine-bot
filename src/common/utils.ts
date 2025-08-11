@@ -78,7 +78,7 @@ export async function makeTapdRequest<T>(
 
   const data = responseBody as TapdResponse<T>;
 
-  mcpServer.log(data);
+  await mcpServer.log(data);
 
   if (data.status !== 1) {
     throw createRoutineBotError(400, { message: data.info });
@@ -87,11 +87,16 @@ export async function makeTapdRequest<T>(
   return data;
 }
 
-export async function makeJenkinsRequest() {
+export async function makeJenkinsRequest<T>(
+  method: "GET" | "POST",
+  endpoint: string,
+  options: RequestOptions = {}
+): Promise<T> {
   const appConfig = new AppConfig();
+  const mcpServer = MCPServer.getInstance();
 
   const {
-    configs: { jenkins_base_url, jenkins_access_token },
+    configs: { jenkins_base_url, jenkins_username, jenkins_access_token },
   } = appConfig;
 
   if (!jenkins_base_url) {
@@ -100,9 +105,45 @@ export async function makeJenkinsRequest() {
     });
   }
 
+  if (!jenkins_username) {
+    throw createRoutineBotError(422, {
+      message: "JENKINS_USERNAME environment variable is not set",
+    });
+  }
+
   if (!jenkins_access_token) {
     throw createRoutineBotError(422, {
       message: "JENKINS_ACCESS_TOKEN environment variable is not set",
     });
   }
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    // Via: "mcp-server-routine-bot",
+    ...options.headers,
+  };
+
+  headers["Authorization"] =
+    "Basic " +
+    Buffer.from(`${jenkins_username}:${jenkins_access_token}`).toString(
+      "base64"
+    );
+
+  const response = await fetch(`${jenkins_base_url}/${endpoint}`, {
+    method,
+    headers,
+    body: options.body ? JSON.stringify(options.body) : undefined,
+  });
+
+  const responseBody = await parseResponseBody(response);
+
+  if (!response.ok) {
+    throw createRoutineBotError(response.status, responseBody);
+  }
+
+  const data = responseBody as T;
+
+  await mcpServer.log(data);
+
+  return data;
 }
