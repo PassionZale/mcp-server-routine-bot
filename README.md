@@ -35,6 +35,8 @@ Configure the server with your platform credentials:
       "args": ["-y", "@code-sugar/mcp-server-routine-bot"],
       "env": {
         "TAPD_NICK": "your_tapd_nickname",
+        "TAPD_GROUP_NICKS": "nickname|nickname|nickname",
+        "TAPD_DEFAULT_WORKSPACE_ID": "your_tapd_default_workspace_id",
         "TAPD_BASE_URL": "https://api.tapd.cn",
         "TAPD_ACCESS_TOKEN": "your_tapd_access_token",
         "JENKINS_BASE_URL": "your_jenkins_base_url",
@@ -103,7 +105,16 @@ For debugging and inspection:
      "mcpServers": {
        "local-mcp-server-routine-bot": {
          "command": "node",
-         "args": ["/path/to/your/mcp-server-routine-bot/dist/index.js"]
+         "args": ["/path/to/your/mcp-server-routine-bot/dist/index.js"],
+         "env": {
+           "TAPD_NICK": "your_tapd_nickname",
+           "TAPD_GROUP_NICKS": "nickname|nickname|nickname",
+           "TAPD_DEFAULT_WORKSPACE_ID": "your_tapd_default_workspace_id",
+           "TAPD_BASE_URL": "https://api.tapd.cn",
+           "TAPD_ACCESS_TOKEN": "your_tapd_access_token",
+           "JENKINS_BASE_URL": "your_jenkins_base_url",
+           "JENKINS_ACCESS_TOKEN": "your_jenkins_access_token"
+         }
        }
      }
    }
@@ -146,11 +157,13 @@ For development with Hot Reload support:
            "/path/to/your/mcp-server-routine-bot/dist/index.js"
          ],
          "env": {
-           "TAPD_NICK": "your_nickname",
+           "TAPD_NICK": "your_tapd_nickname",
+           "TAPD_GROUP_NICKS": "nickname|nickname|nickname",
+           "TAPD_DEFAULT_WORKSPACE_ID": "your_tapd_default_workspace_id",
            "TAPD_BASE_URL": "https://api.tapd.cn",
-           "TAPD_ACCESS_TOKEN": "your_access_token",
-           "JENKINS_BASE_URL": "your_jenkins_url",
-           "JENKINS_ACCESS_TOKEN": "your_jenkins_token"
+           "TAPD_ACCESS_TOKEN": "your_tapd_access_token",
+           "JENKINS_BASE_URL": "your_jenkins_base_url",
+           "JENKINS_ACCESS_TOKEN": "your_jenkins_access_token"
          }
        }
      }
