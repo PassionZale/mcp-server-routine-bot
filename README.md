@@ -40,8 +40,11 @@ Configure the server with your platform credentials:
         "TAPD_BASE_URL": "https://api.tapd.cn",
         "TAPD_ACCESS_TOKEN": "your_tapd_access_token",
         "JENKINS_BASE_URL": "your_jenkins_base_url",
-				"JENKINS_USERNAME": "your_jenkins_username",
-        "JENKINS_ACCESS_TOKEN": "your_jenkins_access_token"
+        "JENKINS_USERNAME": "your_jenkins_username",
+        "JENKINS_ACCESS_TOKEN": "your_jenkins_access_token",
+        "MCP_HAS_LOCAL_CONTEXT": "",
+        "GITLAB_BASE_URL": "your_gitlab_base_url",
+        "GITLAB_ACCESS_TOKEN": "your_gitlab_access_token"
       }
     }
   }
@@ -60,6 +63,9 @@ Configure the server with your platform credentials:
 | `JENKINS_BASE_URL`          | ✅       | -                     | Jenkins server base URL        |
 | `JENKINS_USERNAME`          | ✅       | -                     | Jenkins username               |
 | `JENKINS_ACCESS_TOKEN`      | ✅       | -                     | Jenkins API access token       |
+| `MCP_HAS_LOCAL_CONTEXT`     | ❌       | "FALSE"               | "TRUE" / "FALSE"               |
+| `GITLAB_BASE_URL`           | ✅       | -                     | Gitlab API base URL            |
+| `GITLAB_ACCESS_TOKEN`       | ✅       | -                     | Gitlab API access token        |
 
 ## Development Guide
 
@@ -115,8 +121,11 @@ For debugging and inspection:
            "TAPD_BASE_URL": "https://api.tapd.cn",
            "TAPD_ACCESS_TOKEN": "your_tapd_access_token",
            "JENKINS_BASE_URL": "your_jenkins_base_url",
-					 "JENKINS_USERNAME": "your_jenkins_username",
-           "JENKINS_ACCESS_TOKEN": "your_jenkins_access_token"
+           "JENKINS_USERNAME": "your_jenkins_username",
+           "JENKINS_ACCESS_TOKEN": "your_jenkins_access_token",
+           "MCP_HAS_LOCAL_CONTEXT": "",
+           "GITLAB_BASE_URL": "your_gitlab_base_url",
+           "GITLAB_ACCESS_TOKEN": "your_gitlab_access_token"
          }
        }
      }
@@ -166,8 +175,11 @@ For development with Hot Reload support:
            "TAPD_BASE_URL": "https://api.tapd.cn",
            "TAPD_ACCESS_TOKEN": "your_tapd_access_token",
            "JENKINS_BASE_URL": "your_jenkins_base_url",
-					 "JENKINS_USERNAME": "your_jenkins_username",
-           "JENKINS_ACCESS_TOKEN": "your_jenkins_access_token"
+           "JENKINS_USERNAME": "your_jenkins_username",
+           "JENKINS_ACCESS_TOKEN": "your_jenkins_access_token",
+           "MCP_HAS_LOCAL_CONTEXT": "",
+           "GITLAB_BASE_URL": "your_gitlab_base_url",
+           "GITLAB_ACCESS_TOKEN": "your_gitlab_access_token"
          }
        }
      }
