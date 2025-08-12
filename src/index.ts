@@ -7,4 +7,7 @@ async function main() {
   await server.start();
 }
 
-main().catch(console.error);
+main().catch((error) => {
+  console.error("Fatal error running server:", error);
+  process.exit(1);
+});

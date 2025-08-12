@@ -99,7 +99,10 @@ class MCPServer {
     await this.initialize();
 
     const transport = new StdioServerTransport();
+		
     await this.server.connect(transport);
+
+		console.error("MCP Routine Bot Server running on stdio");
   }
 
   async log(

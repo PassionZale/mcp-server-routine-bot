@@ -5,7 +5,7 @@
   "author": "Lei Zhang (https://www.lovchun.com)",
   "description": "A Model Context Protocol (MCP) server for routine bot operations.",
   "bin": {
-    "mcp-server-routine-bot": "dist/index.js"
+    "mcp-server-routine-bot": "./dist/index.js"
   },
   "scripts": {
     "build": "shx rm -rf dist && tsc && tsc-alias && shx chmod +x dist/*.js",
