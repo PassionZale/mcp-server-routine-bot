@@ -1,7 +1,3 @@
-import { execSync } from "child_process";
-import path from "path";
-import fs from "fs";
-
 import { createRoutineBotError } from "./errors.js";
 import { TapdResponse } from "./types.js";
 import AppConfig from "@/config/index.js";
@@ -198,32 +194,4 @@ export async function makeGitlabRequest<T>(
   await mcpServer.log(data);
 
   return data;
-}
-
-export function getFolderName() {
-  return path.basename(process.cwd());
-}
-
-export function getGitBranch() {
-  try {
-    return execSync("git rev-parse --abbrev-ref HEAD", {
-      cwd: process.cwd(),
-      encoding: "utf-8",
-    }).trim();
-  } catch {
-    return;
-  }
-}
-
-export function getGitProjectNameFromRemote() {
-  try {
-    const remoteUrl = execSync("git remote get-url origin", {
-      cwd: process.cwd(),
-      encoding: "utf-8",
-    }).trim();
-    const match = remoteUrl.match(/([^/]+?)(\.git)?$/); // 最后一个 / 后面的部分
-    return match ? match[1] : null;
-  } catch {
-    return null;
-  }
 }

@@ -15,9 +15,6 @@ import { JENKINS_TOOL_DEFINITIONS } from "./tools/jenkins/index.js";
 import { JenkinsJobList, JenkinsToolNames } from "./tools/jenkins/types.js";
 import {
   buildUrl,
-  getFolderName,
-  getGitBranch,
-  getGitProjectNameFromRemote,
   makeGitlabRequest,
   makeJenkinsRequest,
   makeTapdRequest,
@@ -99,10 +96,10 @@ class MCPServer {
     await this.initialize();
 
     const transport = new StdioServerTransport();
-		
+
     await this.server.connect(transport);
 
-		console.error("MCP Routine Bot Server running on stdio");
+    console.error("MCP Routine Bot Server running on stdio");
   }
 
   async log(
@@ -461,15 +458,6 @@ class MCPServer {
 
     let project: GitlabProject | null = null;
 
-    if (this.appConfig.mcp_has_local_context) {
-      if (!projectName) {
-        projectName = getGitProjectNameFromRemote() || getFolderName();
-      }
-      if (!sourceBranch) {
-        sourceBranch = getGitBranch();
-      }
-    }
-
     if (projectId) {
       project = await makeGitlabRequest<GitlabProject>(
         "GET",
@@ -504,8 +492,7 @@ class MCPServer {
                 `找到多个项目，请选择一个：\n` +
                 projects
                   .map(
-                    (p, i) =>
-                      `${p.id}: ${p.name_with_namespace} (${p.web_url})`
+                    (p, i) => `${p.id}: ${p.name_with_namespace} (${p.web_url})`
                   )
                   .join("\n"),
             },

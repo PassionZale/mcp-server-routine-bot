@@ -9,8 +9,6 @@ class AppConfig {
   jenkins_username: string;
   jenkins_access_token: string;
 
-  mcp_has_local_context: boolean;
-
   gitlab_base_url: string;
   gitlab_access_token: string;
 
@@ -28,8 +26,6 @@ class AppConfig {
     this.jenkins_username = process.env.JENKINS_USERNAME || "";
     this.jenkins_access_token = process.env.JENKINS_ACCESS_TOKEN || "";
 
-    this.mcp_has_local_context = process.env.MCP_HAS_LOCAL_CONTEXT === "TRUE";
-
     this.gitlab_base_url = process.env.GITLAB_BASE_URL || "https://gitlab.com";
     this.gitlab_access_token = process.env.GITLAB_ACCESS_TOKEN || "";
   }
@@ -45,8 +41,6 @@ class AppConfig {
       jenkins_base_url: this.jenkins_base_url,
       jenkins_username: this.jenkins_username,
       jenkins_access_token: this.jenkins_access_token,
-
-      mcp_has_local_context: this.mcp_has_local_context,
 
       gitlab_base_url: this.gitlab_base_url,
       gitlab_access_token: this.gitlab_access_token,
