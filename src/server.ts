@@ -30,6 +30,8 @@ import {
 import { GITLAB_TOOL_DEFINITIONS } from "./tools/gitlab/index.js";
 import { createRoutineBotError } from "./common/errors.js";
 import { groupTasksByOwner } from "./common/tapd/task.js";
+import { COMMON_TOOL_DEFINITIONS } from "./tools/common/index.js";
+import { CommonToolNames } from "./tools/common/types.js";
 
 class MCPServer {
   private static instance: MCPServer | null = null;
@@ -142,6 +144,7 @@ class MCPServer {
     // 列出所有可用工具
     this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
       tools: [
+        ...Object.values(COMMON_TOOL_DEFINITIONS),
         ...Object.values(TAPD_TOOL_DEFINITIONS),
         ...Object.values(JENKINS_TOOL_DEFINITIONS),
         ...Object.values(GITLAB_TOOL_DEFINITIONS),
@@ -152,7 +155,13 @@ class MCPServer {
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const { name, arguments: args } = request.params;
 
-      return this.executeTool(name as TapdToolNames & JenkinsToolNames, args);
+      return this.executeTool(
+        name as CommonToolNames &
+          TapdToolNames &
+          JenkinsToolNames &
+          GitlabToolNames,
+        args
+      );
     });
 
     // 实现日志级别更改
@@ -174,6 +183,9 @@ class MCPServer {
   ) {
     try {
       switch (toolName) {
+        case CommonToolNames.COMMON_REFRESH_PROMPTS:
+          return await this.handleCommonRefreshPrompts();
+
         case TapdToolNames.TAPD_USERS_INFO:
           return await this.handleTapdUsersInfo();
 
@@ -215,6 +227,18 @@ class MCPServer {
         isError: true,
       };
     }
+  }
+
+  private async handleCommonRefreshPrompts() {
+    return {
+      content: [
+        {
+          type: "text",
+          text: "刷新成功",
+        },
+      ],
+      isError: false,
+    };
   }
 
   private async handleTapdUsersInfo() {
