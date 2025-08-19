@@ -11,8 +11,8 @@ node_modules
 dist
 .env
 
-prompts/*
-!prompts/.gitkeep
+src/prompts/*
+!src/prompts/index.ts
 
 # Editor directories and files
 .vscode/*
