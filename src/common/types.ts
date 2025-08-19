@@ -24,3 +24,13 @@ export const EMPTY_SCHEMA = {
   properties: {},
   additionalProperties: false,
 } as const;
+
+export interface PromptDefinition {
+  name: string;
+  description?: string;
+  arguments?: Array<{
+    name: string;
+    description?: string;
+    required?: boolean;
+  }>;
+}

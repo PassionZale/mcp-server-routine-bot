@@ -13,7 +13,7 @@ export const JENKINS_TOOL_DEFINITIONS: Record<
   [JenkinsToolNames.JENKINS_JOB_BUILD]: {
     name: JenkinsToolNames.JENKINS_JOB_BUILD,
     description:
-      "触发 Jenkins Job 构建。如果 jobName 未提供，则调用 jenkins_job_list 返回 job 列表，让用户选择",
+      "触发 Jenkins Job 构建。如果 jobName 未提供，则调用 jenkins_job_list 返回 job 列表，让用户选择，如果 jobName 提供，则直接使用 jobName",
     inputSchema: {
       type: "object",
       properties: {

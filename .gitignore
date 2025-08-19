@@ -11,6 +11,9 @@ node_modules
 dist
 .env
 
+prompts/*
+!prompts/.gitkeep
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
