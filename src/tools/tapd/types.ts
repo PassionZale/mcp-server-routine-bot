@@ -50,3 +50,20 @@ export type TapdUserParticipantProjects = {
     created: string;
   };
 }[];
+
+// 任务数据类型定义
+export interface TapdUserTask {
+  id: string;
+  name: string;
+  creator: string;
+  owner: string;
+  priority: string;
+  status: "open" | "progressing" | "done";
+  progress: string;
+  completed: string | null;
+  effort_completed: string;
+  exceed: string;
+  remain: string;
+  effort: string;
+  priority_label: string;
+}

@@ -10,6 +10,7 @@ import {
   TapdToolNames,
   TapdUserParticipantProjects,
   TapdUsersInfo,
+  TapdUserTask,
 } from "./tools/tapd/types.js";
 import { JENKINS_TOOL_DEFINITIONS } from "./tools/jenkins/index.js";
 import { JenkinsJobList, JenkinsToolNames } from "./tools/jenkins/types.js";
@@ -28,6 +29,7 @@ import {
 } from "./tools/gitlab/types.js";
 import { GITLAB_TOOL_DEFINITIONS } from "./tools/gitlab/index.js";
 import { createRoutineBotError } from "./common/errors.js";
+import { groupTasksByOwner } from "./common/tapd/task.js";
 
 class MCPServer {
   private static instance: MCPServer | null = null;
@@ -307,7 +309,7 @@ class MCPServer {
         ? this.appConfig.tapd_group_nicks.join("|")
         : this.appConfig.tapd_nick;
 
-    const { data } = await makeTapdRequest(
+    const { data } = await makeTapdRequest<Array<{ Task: TapdUserTask }>>(
       "GET",
       buildUrl("tasks", {
         workspace_id: args.workspace_id,
@@ -321,11 +323,13 @@ class MCPServer {
       })
     );
 
+    const result = groupTasksByOwner(data);
+
     return {
       content: [
         {
           type: "text",
-          text: JSON.stringify(data, null, 2),
+          text: result.formattedOutput,
         },
       ],
       isError: true,

@@ -47,37 +47,12 @@ export const TAPD_TOOL_DEFINITIONS: Record<TapdToolNames, ToolDefinition> = {
   [TapdToolNames.TAPD_ITERATION_USER_TASKS]: {
     name: TapdToolNames.TAPD_ITERATION_USER_TASKS,
     description: `
-		获取 TAPD 迭代中成员或成员组的任务，根据查询的结果进行总结，给出清晰的数据统计概览，常用于每周进度汇总。
+		获取 TAPD 迭代中成员或成员组的任务列表，常用于个人或小组迭代任务的进度汇总，如果用户需要查询小组或者全部成员则 owner 优先使用环境变量 TAPD_GROUP_NICKS。
 
 		!!! IMPORTANT !!!
 		- 如果 workspace_id 没有给定，则使用环境变量 TAPD_DEFAULT_WORKSPACE_ID
 		- 如果 iteration_id 没有给定，则先调用 tapd_iterations 查询 workspace_id + name 下匹配的迭代，让用户选择
 		- 如果 owner 没有给定，则使用环境变量 TAPD_GROUP_NICKS，如果 TAPD_GROUP_NICKS 没有定义，则继续使用 TAPD_NICK
-
-		示例：
-
-		## 数据概览
-
-		1. 总体情况
-			- 共有X个负责人
-			- 总计X个任务
-			- 完成率情况（高或低或正常）：X个已完成，Y个未完成
-		2. 项目风险
-			项目风险按照所给定成员的任务数量、开始情况、完成情况，分析出哪些成员可能会存在瓶颈，这些瓶颈且有风险的任务大概有哪些模块
-
-		## 成员任务
-
-		status 枚举值对照为 open（未开始）、progressing（进行中）、done（已完成），在展示 status 时，使用对应的 value 进行填充
-
-		成员1
-
-		-  {【priority_label】} {name} 【{status}】 {process%}
-
-		成员2
-
-		-  {【priority_label】} {name} {status} {process%}
-
-		等等...
 		`,
     inputSchema: {
       type: "object",
