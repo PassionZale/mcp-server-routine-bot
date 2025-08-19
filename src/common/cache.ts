@@ -33,7 +33,7 @@ export class CacheManager<T = CacheItem> {
 
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
-    const filePath = join(__dirname, fileName);
+    const filePath = join(__dirname, '../prompts', fileName);
 
     // 默认配置
     this.config = {
