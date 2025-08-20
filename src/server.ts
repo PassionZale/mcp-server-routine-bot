@@ -551,7 +551,7 @@ class MCPServer {
           text: result.formattedOutput,
         },
       ],
-      isError: true,
+      isError: false,
     };
   }
 
@@ -587,7 +587,7 @@ class MCPServer {
           text: JSON.stringify(data, null, 2),
         },
       ],
-      isError: true,
+      isError: false,
     };
   }
 
