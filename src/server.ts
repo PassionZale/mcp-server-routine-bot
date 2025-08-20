@@ -77,7 +77,7 @@ class MCPServer {
     this.server = new Server(
       {
         name: "mcp-server-routine-bot",
-        version: "0.0.11",
+        version: "1.0.1",
       },
       {
         capabilities: {
