@@ -3,6 +3,10 @@ import { TapdResponse } from "./types.js";
 import AppConfig from "@/config/index.js";
 import MCPServer from "@/server.js";
 
+export async function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 type RequestOptions = {
   body?: unknown;
   headers?: Record<string, string>;
@@ -147,7 +151,7 @@ export async function makeJenkinsRequest<T>(
 }
 
 export async function makeGitlabRequest<T>(
-  method: "GET" | "POST",
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
   endpoint: string,
   options: RequestOptions = {}
 ): Promise<T> {
@@ -186,6 +190,7 @@ export async function makeGitlabRequest<T>(
   const responseBody = await parseResponseBody(response);
 
   if (!response.ok) {
+		console.error(responseBody)
     throw createRoutineBotError(response.status, responseBody);
   }
 

@@ -18,6 +18,7 @@ import { JENKINS_TOOL_DEFINITIONS } from "./tools/jenkins/index.js";
 import { JenkinsJobList, JenkinsToolNames } from "./tools/jenkins/types.js";
 import {
   buildUrl,
+  delay,
   makeGitlabRequest,
   makeJenkinsRequest,
   makeTapdRequest,
@@ -25,9 +26,9 @@ import {
 import AppConfig from "@/config/index.js";
 import dayjs from "dayjs";
 import {
-  GitlabMergeReqeust,
   GitlabProject,
   GitlabToolNames,
+  GitlabMergeRequest,
 } from "./tools/gitlab/types.js";
 import { GITLAB_TOOL_DEFINITIONS } from "./tools/gitlab/index.js";
 import { createRoutineBotError } from "./common/errors.js";
@@ -36,6 +37,7 @@ import { COMMON_TOOL_DEFINITIONS } from "./tools/common/index.js";
 import { CommonToolNames } from "./tools/common/types.js";
 import { PromptDefinition } from "./common/types.js";
 import { CacheManager } from "./common/cache.js";
+import { waitForMergeability } from "./common/gitlab/merge.js";
 
 class MCPServer {
   private static instance: MCPServer | null = null;
@@ -77,7 +79,7 @@ class MCPServer {
     this.server = new Server(
       {
         name: "mcp-server-routine-bot",
-        version: "1.0.1",
+        version: "1.0.2",
       },
       {
         capabilities: {
@@ -676,8 +678,15 @@ class MCPServer {
     projectName?: string;
     sourceBranch?: string;
     targetBranch?: string;
+    autoMerge?: boolean;
   }) {
-    let { projectId, projectName, sourceBranch, targetBranch } = args;
+    let {
+      projectId,
+      projectName,
+      sourceBranch,
+      targetBranch,
+      autoMerge = false,
+    } = args;
 
     let project: GitlabProject | null = null;
 
@@ -737,8 +746,8 @@ class MCPServer {
       targetBranch = project.default_branch || "main";
     }
 
-    // === 创建 MR ===
-    const mr = await makeGitlabRequest<GitlabMergeReqeust>(
+    // === 1.创建 MR ===
+    const mr = await makeGitlabRequest<GitlabMergeRequest>(
       "POST",
       `projects/${project.id}/merge_requests`,
       {
@@ -750,15 +759,36 @@ class MCPServer {
       }
     );
 
-    return {
-      content: [
-        {
-          type: "text",
-          text: `✅ Merge Request 已创建。\n详情链接：${mr.web_url}`,
-        },
-      ],
-      isError: false,
-    };
+    if (autoMerge === true) {
+      // === 2.等待 MR 变为可合并状态 ===
+      await waitForMergeability(projectId!, mr.iid);
+
+      // === 3.合并 MR ===
+      await makeGitlabRequest<GitlabMergeRequest>(
+        "PUT",
+        `projects/${project.id}/merge_requests/${mr.iid}/merge`
+      );
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `✅ Merge Request 已创建并自动合并。\n详情链接：${mr.web_url}`,
+          },
+        ],
+        isError: false,
+      };
+    } else {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `✅ Merge Request 已创建。\n详情链接：${mr.web_url}`,
+          },
+        ],
+        isError: false,
+      };
+    }
   }
 }
 

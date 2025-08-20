@@ -33,6 +33,10 @@ export const GITLAB_TOOL_DEFINITIONS: Record<GitlabToolNames, ToolDefinition> =
             type: "string",
             description: "目标分支名称",
           },
+          autoMerge: {
+            type: "boolean",
+            description: "是否自动合并。默认为 false",
+          },
         },
       },
     },
