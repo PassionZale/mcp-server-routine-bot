@@ -632,7 +632,7 @@ class MCPServer {
           text: JSON.stringify(data, null, 2),
         },
       ],
-      isError: true,
+      isError: false,
     };
   }
 
