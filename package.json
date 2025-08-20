@@ -1,6 +1,6 @@
 {
   "name": "@code-sugar/mcp-server-routine-bot",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "author": "Lei Zhang (https://www.lovchun.com)",
   "description": "A Model Context Protocol (MCP) server for routine bot operations.",
