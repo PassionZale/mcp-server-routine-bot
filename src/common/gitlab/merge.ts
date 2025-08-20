@@ -21,8 +21,6 @@ export async function waitForMergeability(
       `/projects/${projectId}/merge_requests/${mrIID}`
     );
 
-		console.error(mr)
-
     // 检查 MR 是否可以合并
     const mergeabilityCheck = checkMergeability(mr);
 

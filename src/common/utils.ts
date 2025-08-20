@@ -190,7 +190,6 @@ export async function makeGitlabRequest<T>(
   const responseBody = await parseResponseBody(response);
 
   if (!response.ok) {
-		console.error(responseBody)
     throw createRoutineBotError(response.status, responseBody);
   }
 
