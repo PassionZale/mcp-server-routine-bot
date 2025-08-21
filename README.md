@@ -32,7 +32,7 @@ Configure the server with your platform credentials:
   "mcpServers": {
     "mcp-server-routine-bot": {
       "command": "npx",
-      "args": ["-y", "@code-sugar/mcp-server-routine-bot"],
+      "args": ["-y", "@code-sugar/mcp-server-routine-bot@latest"],
       "env": {
         "TAPD_NICK": "your_tapd_nickname",
         "TAPD_GROUP_NICKS": "nickname|nickname|nickname",

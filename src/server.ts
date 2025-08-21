@@ -79,7 +79,7 @@ class MCPServer {
     this.server = new Server(
       {
         name: "mcp-server-routine-bot",
-        version: "1.0.3",
+        version: "1.0.4",
       },
       {
         capabilities: {

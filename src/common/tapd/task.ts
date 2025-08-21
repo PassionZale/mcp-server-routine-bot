@@ -92,19 +92,19 @@ export function groupTasksByOwner(taskData: TaskData): GroupedTasksResult {
   let formattedOutput = "";
 
   // // 添加数据统计
-  // formattedOutput += "任务数据统计\n\n";
-  // formattedOutput += `- 总负责人数: ${statistics.length}人\n`;
-  // formattedOutput += `- 任务总数: ${tasks.length}个\n`;
-  // formattedOutput += `- 已完成: ${totalCompleted}个\n`;
-  // formattedOutput += `- 进行中: ${totalProgressing}个\n`;
-  // formattedOutput += `- 未开始: ${totalNotStarted}个\n\n`;
+  formattedOutput += "任务数据统计\n\n";
+  formattedOutput += `- 总负责人数: ${statistics.length}人\n`;
+  formattedOutput += `- 任务总数: ${tasks.length}个\n`;
+  formattedOutput += `- 已完成: ${totalCompleted}个\n`;
+  formattedOutput += `- 进行中: ${totalProgressing}个\n`;
+  formattedOutput += `- 未开始: ${totalNotStarted}个\n\n`;
 
-  // formattedOutput += "各负责人任务分布\n\n";
-  // statistics.forEach((stat) => {
-  //   formattedOutput += `- ${stat.owner}: ${stat.total}个任务（已完成${stat.completed}个，进行中${stat.progressing}个，未开始${stat.notStarted}个）\n`;
-  // });
+  formattedOutput += "各负责人任务分布\n\n";
+  statistics.forEach((stat) => {
+    formattedOutput += `- ${stat.owner}: ${stat.total}个任务（已完成${stat.completed}个，进行中${stat.progressing}个，未开始${stat.notStarted}个）\n`;
+  });
 
-  // formattedOutput += "\n---\n\n按处理人分组的任务列表\n\n";
+  formattedOutput += "\n---\n\各负责人任务列表\n\n";
 
   // 添加分组任务列表
   Object.entries(groupedTasks).forEach(([owner, tasks]) => {
