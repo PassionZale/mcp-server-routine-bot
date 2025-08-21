@@ -91,20 +91,20 @@ export function groupTasksByOwner(taskData: TaskData): GroupedTasksResult {
   // 生成格式化输出
   let formattedOutput = "";
 
-  // 添加数据统计
-  formattedOutput += "任务数据统计\n\n";
-  formattedOutput += `- 总负责人数: ${statistics.length}人\n`;
-  formattedOutput += `- 任务总数: ${tasks.length}个\n`;
-  formattedOutput += `- 已完成: ${totalCompleted}个\n`;
-  formattedOutput += `- 进行中: ${totalProgressing}个\n`;
-  formattedOutput += `- 未开始: ${totalNotStarted}个\n\n`;
+  // // 添加数据统计
+  // formattedOutput += "任务数据统计\n\n";
+  // formattedOutput += `- 总负责人数: ${statistics.length}人\n`;
+  // formattedOutput += `- 任务总数: ${tasks.length}个\n`;
+  // formattedOutput += `- 已完成: ${totalCompleted}个\n`;
+  // formattedOutput += `- 进行中: ${totalProgressing}个\n`;
+  // formattedOutput += `- 未开始: ${totalNotStarted}个\n\n`;
 
-  formattedOutput += "各负责人任务分布\n\n";
-  statistics.forEach((stat) => {
-    formattedOutput += `- ${stat.owner}: ${stat.total}个任务（已完成${stat.completed}个，进行中${stat.progressing}个，未开始${stat.notStarted}个）\n`;
-  });
+  // formattedOutput += "各负责人任务分布\n\n";
+  // statistics.forEach((stat) => {
+  //   formattedOutput += `- ${stat.owner}: ${stat.total}个任务（已完成${stat.completed}个，进行中${stat.progressing}个，未开始${stat.notStarted}个）\n`;
+  // });
 
-  formattedOutput += "\n---\n\n按处理人分组的任务列表\n\n";
+  // formattedOutput += "\n---\n\n按处理人分组的任务列表\n\n";
 
   // 添加分组任务列表
   Object.entries(groupedTasks).forEach(([owner, tasks]) => {
@@ -112,7 +112,7 @@ export function groupTasksByOwner(taskData: TaskData): GroupedTasksResult {
 
     tasks.forEach((task) => {
       const statusText = STATUS_MAP[task.status];
-      formattedOutput += `- 【${task.priority_label}】${task.name} 【${statusText}】 ${task.progress}%\n`;
+      formattedOutput += `- 【${extractLastSevenDigits(task.id)}】${task.name} (${statusText})\n   ${taskUrlTemplte(task.workspace_id, task.id)}\n\n`;
     });
 
     formattedOutput += "\n";
@@ -141,4 +141,20 @@ export function getTaskStatistics(taskData: TaskData): {
     statistics: result.statistics,
     summary: result.summary,
   };
+}
+
+/**
+ * 截取字符串的最后七位数字
+ * @param inputString 输入字符串
+ * @returns 字符串的最后七位数字，如果字符串长度不足七位则返回原字符串
+ */
+function extractLastSevenDigits(inputString: string): string {
+  if (inputString.length >= 7) {
+    return inputString.slice(-7);
+  }
+  return inputString;
+}
+
+function taskUrlTemplte(workspace_id: string, task_id: string): string {
+	return `https://www.tapd.cn/${workspace_id}/prong/tasks/view/${task_id}`
 }

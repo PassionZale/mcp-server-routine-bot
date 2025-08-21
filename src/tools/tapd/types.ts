@@ -54,6 +54,7 @@ export type TapdUserParticipantProjects = {
 // 任务数据类型定义
 export interface TapdUserTask {
   id: string;
+	workspace_id: string;
   name: string;
   creator: string;
   owner: string;

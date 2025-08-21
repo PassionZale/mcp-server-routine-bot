@@ -79,7 +79,7 @@ class MCPServer {
     this.server = new Server(
       {
         name: "mcp-server-routine-bot",
-        version: "1.0.2",
+        version: "1.0.3",
       },
       {
         capabilities: {
@@ -539,7 +539,7 @@ class MCPServer {
         creator: nicks,
         order: encodeURIComponent("priority desc"),
         fields:
-          "id,name,creator,owner,priority_label,status,progress,completed,effort_completed,exceed,remain,effort",
+          "id,workspace_id,name,creator,owner,priority_label,status,progress,completed,effort_completed,exceed,remain,effort",
         limit: 200,
       })
     );
