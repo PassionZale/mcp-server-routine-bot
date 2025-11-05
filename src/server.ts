@@ -4,8 +4,6 @@ import {
   ListToolsRequestSchema,
   CallToolRequestSchema,
   SetLevelRequestSchema,
-  ListPromptsRequestSchema,
-  GetPromptRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { TAPD_TOOL_DEFINITIONS } from "./tools/tapd/index.js";
 import {
@@ -33,10 +31,6 @@ import {
 import { GITLAB_TOOL_DEFINITIONS } from "./tools/gitlab/index.js";
 import { createRoutineBotError } from "./common/errors.js";
 import { groupTasksByOwner } from "./common/tapd/task.js";
-import { COMMON_TOOL_DEFINITIONS } from "./tools/common/index.js";
-import { CommonToolNames } from "./tools/common/types.js";
-import { PromptDefinition } from "./common/types.js";
-import { CacheManager } from "./common/cache.js";
 import { waitForMergeability } from "./common/gitlab/merge.js";
 
 class MCPServer {
@@ -61,20 +55,8 @@ class MCPServer {
 
   private appConfig: AppConfig;
 
-  private jenkinsPromptsCacheManager: CacheManager;
-
-  private gitlabPromptsCacheManager: CacheManager;
-
   constructor() {
     this.appConfig = new AppConfig();
-
-    this.jenkinsPromptsCacheManager = new CacheManager<PromptDefinition>({
-      fileName: "jenkins_prompts_cache.json",
-    });
-
-    this.gitlabPromptsCacheManager = new CacheManager<PromptDefinition>({
-      fileName: "gitlab_prompts_cache.json",
-    });
 
     this.server = new Server(
       {
@@ -85,9 +67,6 @@ class MCPServer {
         capabilities: {
           logging: {},
           tools: {},
-          prompts: {
-            listChanged: true,
-          },
         },
       }
     );
@@ -102,9 +81,6 @@ class MCPServer {
 
   async initialize(): Promise<void> {
     if (this.isInitialized) return;
-
-    await this.jenkinsPromptsCacheManager.init();
-    await this.gitlabPromptsCacheManager.init();
 
     this.setupHandlers();
     this.isInitialized = true;
@@ -164,101 +140,11 @@ class MCPServer {
     }
   }
 
-  private async notifyPromptsListChanged() {
-    try {
-      await this.server.notification({
-        method: "notifycations/prompts/list_changed",
-      });
-
-      this.log("Sent prompts/list_changed notification");
-    } catch (error) {
-      this.log(`Failed to send prompts/list_changed notification`, "error");
-      this.log(error, "error");
-    }
-  }
-
+  
   private setupHandlers() {
-    // 列出所有可用的 prompts
-    this.server.setRequestHandler(ListPromptsRequestSchema, async () => {
-      try {
-        const jenkinsPrompts = await this.jenkinsPromptsCacheManager.get();
-        const gitlabPrompts = await this.gitlabPromptsCacheManager.get();
-
-        return {
-          prompts: [...jenkinsPrompts, ...gitlabPrompts],
-        };
-      } catch (error) {
-        console.error("Error ListPromptsRequestSchema:", error);
-        return { prompts: [] };
-      }
-    });
-
-    // 处理 prompts 调用
-    this.server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-      const { name } = request.params;
-
-      try {
-        const jenkinsPrompts = await this.jenkinsPromptsCacheManager.get();
-        const gitlabPrompts = await this.gitlabPromptsCacheManager.get();
-
-        const jenkinsPrompt = jenkinsPrompts.find((p) => p.name === name);
-        const gitlabPrompt = gitlabPrompts.find((p) => p.name === name);
-
-        const prompt = jenkinsPrompt || gitlabPrompt;
-
-        if (!prompt) {
-          throw createRoutineBotError(422, `Prompt "${name}" not found`);
-        }
-
-        // jenkins_build@jobName
-        if (prompt.name.startsWith("jenkins_build@")) {
-          return {
-            description: prompt.description,
-            messages: [
-              {
-                role: "user" as const,
-                content: {
-                  type: "text" as const,
-                  text: prompt.description,
-                },
-              },
-            ],
-          };
-        }
-
-        // gitlab_merge_request@projectName(projectId)
-        if (prompt.name.startsWith("gitlab_merge_request@")) {
-          const match = prompt.name.match(/\(([^)]+)\)/);
-
-          if (match) {
-            const projectId = match[1];
-            if (!isNaN(projectId) && !isNaN(parseFloat(projectId))) {
-              return {
-                description: prompt.description,
-                messages: [
-                  {
-                    role: "user" as const,
-                    content: {
-                      type: "text" as const,
-                      text: `使用 gitlab_create_merge_request 创建 Merge Request，projectId 为 ${projectId}， 将 ${request.params.arguments?.sourceBranch} 分支合并到 ${request.params.arguments?.targetBranch} 分支`,
-                    },
-                  },
-                ],
-              };
-            }
-          }
-        }
-
-        throw new Error(`Prompt ${name} not implemented`);
-      } catch (error) {
-        throw createRoutineBotError(400, error);
-      }
-    });
-
     // 列出所有可用工具
     this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
       tools: [
-        ...Object.values(COMMON_TOOL_DEFINITIONS),
         ...Object.values(TAPD_TOOL_DEFINITIONS),
         ...Object.values(JENKINS_TOOL_DEFINITIONS),
         ...Object.values(GITLAB_TOOL_DEFINITIONS),
@@ -270,8 +156,7 @@ class MCPServer {
       const { name, arguments: args } = request.params;
 
       return this.executeTool(
-        name as CommonToolNames &
-          TapdToolNames &
+        name as TapdToolNames &
           JenkinsToolNames &
           GitlabToolNames,
         args
@@ -292,20 +177,13 @@ class MCPServer {
   }
 
   private async executeTool(
-    toolName: CommonToolNames &
-      TapdToolNames &
+    toolName: TapdToolNames &
       JenkinsToolNames &
       GitlabToolNames,
     args: any
   ) {
     try {
       switch (toolName) {
-        case CommonToolNames.COMMON_REFRESH_GITLAB_PROMPTS:
-          return await this.handleCommonRefreshGitlabPrompts(args);
-
-        case CommonToolNames.COMMON_REFRESH_JENKINS_PROMPTS:
-          return await this.handleCommonRefreshJenkinsPrompts(args);
-
         case TapdToolNames.TAPD_USERS_INFO:
           return await this.handleTapdUsersInfo();
 
@@ -349,95 +227,7 @@ class MCPServer {
     }
   }
 
-  private async handleCommonRefreshJenkinsPrompts(args: {
-    jobNames?: string[];
-  }) {
-    if (Array.isArray(args.jobNames) && args.jobNames.length > 0) {
-      const prompts = args.jobNames.map((jobName) => ({
-        name: `jenkins_build@${jobName}`,
-        description: `使用 jenkins_job_build 构建 ${jobName}`,
-      }));
-
-      await this.jenkinsPromptsCacheManager.clear();
-
-      await this.jenkinsPromptsCacheManager.set(prompts);
-
-      await this.notifyPromptsListChanged();
-
-      return {
-        content: [
-          {
-            type: "text",
-            text: "jenkins build job prompts 更新成功",
-          },
-        ],
-        isError: false,
-      };
-    }
-
-    return this.handleJenkinsJobList();
-  }
-
-  private async handleCommonRefreshGitlabPrompts(args: {
-    projects?: GitlabProject[];
-  }) {
-    if (Array.isArray(args.projects) && args.projects.length > 0) {
-      const prompts = args.projects.map((project) => ({
-        name: `gitlab_merge_request@${project.name}(${project.id})`,
-        description: `使用 gitlab_merge_request 创建 ${project.name} 的合并请求`,
-        arguments: [
-          {
-            name: "sourceBranch",
-            type: "string",
-            description: "源分支名称",
-            required: true,
-          },
-          {
-            name: "targetBranch",
-            type: "string",
-            description: "目标分支名称",
-            required: true,
-          },
-        ],
-      }));
-
-      await this.gitlabPromptsCacheManager.clear();
-
-      await this.gitlabPromptsCacheManager.set(prompts);
-
-      await this.notifyPromptsListChanged();
-
-      return {
-        content: [
-          {
-            type: "text",
-            text: "gitlab_merge_request prompts 更新成功",
-          },
-        ],
-        isError: false,
-      };
-    }
-
-    const projects = await makeGitlabRequest<GitlabProject[]>(
-      "GET",
-      "projects?per_page=100"
-    );
-
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(
-            projects.map(({ id, name }) => ({ id, name })),
-            null,
-            2
-          ),
-        },
-      ],
-      isError: false,
-    };
-  }
-
+  
   private async handleTapdUsersInfo() {
     const { data } = await makeTapdRequest<TapdUsersInfo>("GET", "users/info");
 
