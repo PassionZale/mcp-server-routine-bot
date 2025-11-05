@@ -5,24 +5,13 @@ import {
   CallToolRequestSchema,
   SetLevelRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { TAPD_TOOL_DEFINITIONS } from "./tools/tapd/index.js";
-import {
-  TapdToolNames,
-  TapdUserParticipantProjects,
-  TapdUsersInfo,
-  TapdUserTask,
-} from "./tools/tapd/types.js";
 import { JENKINS_TOOL_DEFINITIONS } from "./tools/jenkins/index.js";
 import { JenkinsJobList, JenkinsToolNames } from "./tools/jenkins/types.js";
 import {
-  buildUrl,
-  delay,
   makeGitlabRequest,
   makeJenkinsRequest,
-  makeTapdRequest,
 } from "./common/utils.js";
 import AppConfig from "@/config/index.js";
-import dayjs from "dayjs";
 import {
   GitlabProject,
   GitlabToolNames,
@@ -30,8 +19,21 @@ import {
 } from "./tools/gitlab/types.js";
 import { GITLAB_TOOL_DEFINITIONS } from "./tools/gitlab/index.js";
 import { createRoutineBotError } from "./common/errors.js";
-import { groupTasksByOwner } from "./common/tapd/task.js";
 import { waitForMergeability } from "./common/gitlab/merge.js";
+
+function buildUrl(
+  endpoint: string,
+  params: Record<string, string | number | undefined>
+): string {
+  const query = Object.entries(params)
+    .filter(([, value]) => value !== undefined)
+    .map(([key, value]) => {
+      return `${key}=${value}`;
+    })
+    .join("&");
+
+  return `${endpoint}?${query}`;
+}
 
 class MCPServer {
   private static instance: MCPServer | null = null;
@@ -61,7 +63,7 @@ class MCPServer {
     this.server = new Server(
       {
         name: "mcp-server-routine-bot",
-        version: "1.0.4",
+        version: "1.1.0",
       },
       {
         capabilities: {
@@ -145,7 +147,6 @@ class MCPServer {
     // 列出所有可用工具
     this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
       tools: [
-        ...Object.values(TAPD_TOOL_DEFINITIONS),
         ...Object.values(JENKINS_TOOL_DEFINITIONS),
         ...Object.values(GITLAB_TOOL_DEFINITIONS),
       ],
@@ -156,8 +157,7 @@ class MCPServer {
       const { name, arguments: args } = request.params;
 
       return this.executeTool(
-        name as TapdToolNames &
-          JenkinsToolNames &
+        name as JenkinsToolNames &
           GitlabToolNames,
         args
       );
@@ -177,31 +177,12 @@ class MCPServer {
   }
 
   private async executeTool(
-    toolName: TapdToolNames &
-      JenkinsToolNames &
+    toolName: JenkinsToolNames &
       GitlabToolNames,
     args: any
   ) {
     try {
       switch (toolName) {
-        case TapdToolNames.TAPD_USERS_INFO:
-          return await this.handleTapdUsersInfo();
-
-        case TapdToolNames.TAPD_USER_PARTICIPANT_PROJECTS:
-          return await this.handleTapdUserParticipantProjects(args);
-
-        case TapdToolNames.TAPD_ITERATIONS:
-          return await this.handleTapdIterations(args);
-
-        case TapdToolNames.TAPD_ITERATION_USER_TASKS:
-          return await this.handleTapdIterationUserTasks(args);
-
-        case TapdToolNames.TAPD_USER_ATTENDANCE_DAYS:
-          return await this.handleTapdUserAttendanceDays(args);
-
-        case TapdToolNames.TAPD_USER_TODO_STORY_OR_BUG:
-          return await this.handleTapdUserTodStoryOrBug(args);
-
         case JenkinsToolNames.JENKINS_JOB_LIST:
           return await this.handleJenkinsJobList();
 
@@ -228,206 +209,7 @@ class MCPServer {
   }
 
   
-  private async handleTapdUsersInfo() {
-    const { data } = await makeTapdRequest<TapdUsersInfo>("GET", "users/info");
-
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(data, null, 2),
-        },
-      ],
-      isError: false,
-    };
-  }
-
-  private async handleTapdUserParticipantProjects(args?: { nick?: string }) {
-    const { data } = await makeTapdRequest<TapdUserParticipantProjects>(
-      "GET",
-      buildUrl("workspaces/user_participant_projects", {
-        nick: args?.nick || this.appConfig.tapd_nick,
-        fields: "id,name,description",
-      })
-    );
-
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(data, null, 2),
-        },
-      ],
-      isError: false,
-    };
-  }
-
-  private async handleTapdIterations(args?: {
-    workspace_id?: string;
-    name?: string;
-  }) {
-    const workspace_id =
-      args?.workspace_id || this.appConfig.tapd_default_workspace_id;
-
-    if (!workspace_id) {
-      return this.handleTapdUserParticipantProjects();
-    }
-
-    const { data } = await makeTapdRequest(
-      "GET",
-      buildUrl("iterations", {
-        workspace_id,
-        name: args?.name,
-        order: encodeURIComponent("startdate desc"),
-        fields: "id,name,workspace_id,startdate,enddate,status,description",
-        limit: 200,
-      })
-    );
-
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(data, null, 2),
-        },
-      ],
-      isError: false,
-    };
-  }
-
-  private async handleTapdIterationUserTasks(args?: {
-    workspace_id?: string;
-    iteration_id?: string;
-    name?: string;
-    owner?: string;
-  }) {
-    const workspace_id =
-      args?.workspace_id || this.appConfig.tapd_default_workspace_id;
-
-    if (!workspace_id) {
-      return await this.handleTapdUserParticipantProjects();
-    }
-
-    if (!args?.iteration_id) {
-      return await this.handleTapdIterations({
-        workspace_id,
-        name: args?.name,
-      });
-    }
-
-    const nicks: string =
-      args.owner ?? this.appConfig.tapd_group_nicks
-        ? this.appConfig.tapd_group_nicks.join("|")
-        : this.appConfig.tapd_nick;
-
-    const { data } = await makeTapdRequest<Array<{ Task: TapdUserTask }>>(
-      "GET",
-      buildUrl("tasks", {
-        workspace_id: args.workspace_id,
-        iteration_id: args.iteration_id,
-        owner: nicks,
-        creator: nicks,
-        order: encodeURIComponent("priority desc"),
-        fields:
-          "id,workspace_id,name,creator,owner,priority_label,status,progress,completed,effort_completed,exceed,remain,effort",
-        limit: 200,
-      })
-    );
-
-    const result = groupTasksByOwner(data);
-
-    return {
-      content: [
-        {
-          type: "text",
-          text: result.formattedOutput,
-        },
-      ],
-      isError: false,
-    };
-  }
-
-  private async handleTapdUserAttendanceDays(args: {
-    workspace_id?: string;
-    spentdate?: string;
-  }) {
-    const workspace_id =
-      args?.workspace_id || this.appConfig.tapd_default_workspace_id;
-
-    if (!workspace_id) {
-      return await this.handleTapdUserParticipantProjects();
-    }
-
-    const spentdate =
-      args.spentdate ?? dayjs().subtract(1, "month").format("YYYY-MM");
-
-    const { data } = await makeTapdRequest(
-      "GET",
-      buildUrl("timesheets", {
-        workspace_id,
-        owner: this.appConfig.tapd_nick,
-        spentdate: `LIKE<${spentdate}>`,
-        order: encodeURIComponent("spentdate desc"),
-        limit: 200,
-      })
-    );
-
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(data, null, 2),
-        },
-      ],
-      isError: false,
-    };
-  }
-
-  private async handleTapdUserTodStoryOrBug(args: {
-    workspace_id?: string;
-    entity_type?: "story" | "bug";
-  }) {
-    const workspace_id =
-      args.workspace_id || this.appConfig.tapd_default_workspace_id;
-
-    if (!workspace_id) {
-      return await this.handleTapdUserParticipantProjects();
-    }
-
-    if (!args.entity_type) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: "请指定查询的代办类型：需求/任务(story) 或 缺陷(bug)",
-          },
-        ],
-        isError: false,
-      };
-    }
-
-    const { data } = await makeTapdRequest(
-      "GET",
-      buildUrl(`user_oauth/get_user_todo_${args.entity_type}`, {
-        workspace_id,
-        user: this.appConfig.tapd_nick,
-        fields: "name,priority,severity,resolution,status,owner",
-        order: encodeURIComponent("priority desc"),
-        limit: 200,
-      })
-    );
-
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(data, null, 2),
-        },
-      ],
-      isError: false,
-    };
-  }
-
+  
   private async handleJenkinsJobList() {
     const { jobs } = await makeJenkinsRequest<JenkinsJobList>(
       "GET",

@@ -3,7 +3,11 @@ import {
   GitlabMergeRequest,
   MergeStatus,
 } from "@/tools/gitlab/types.js";
-import { delay, makeGitlabRequest } from "../utils.js";
+import { makeGitlabRequest } from "../utils.js";
+
+async function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 import { createRoutineBotError } from "../errors.js";
 
 export async function waitForMergeability(

@@ -5,27 +5,27 @@
 ![Downloads](https://img.shields.io/npm/dt/@code-sugar/mcp-server-routine-bot)
 ![Status](https://img.shields.io/badge/status-in--development-orange)
 
-A Model Context Protocol (MCP) server designed to automate routine operations and enhance productivity through intelligent task automation.
+一个基于模型上下文协议（MCP）的服务器，旨在通过智能任务自动化来简化日常操作并提高工作效率。
 
-> ⚠️ **Note**: This project is currently under active development. Features may change, and some functionality may be incomplete or unstable.
+> ⚠️ **注意**：此项目正在积极开发中。功能可能会发生变化，某些功能可能不完整或不稳定。
 
-## Overview
+## 概述
 
-MCP-Server-Routine-Bot is an intelligent automation assistant that streamlines repetitive workflows and eliminates time-consuming manual tasks. Built on the Model Context Protocol (MCP) framework, it seamlessly integrates with popular development tools to provide automated solutions for common operational challenges.
+MCP-Server-Routine-Bot 基于模型上下文协议（MCP）框架构建，是我个人用于学习 MCP 的项目，内置的工具旨在为我处理日常工作中重复的操作，例如代码合并、版本发布等。
 
-### Key Features
+### 主要特性
 
-- **Task Automation**: Automatically handle repetitive daily operations
-- **Tool Integration**: Native support for Jenkins and TAPD platforms
-- **Smart Workflows**: Customizable automation pipelines for various scenarios
-- **Real-time Monitoring**: Track and manage automated processes
-- **Hot Reload**: Development-friendly architecture with HRM support
+- **任务自动化**：自动处理重复的日常操作
+- **工具集成**：原生支持 Jenkins 和 GitLab 平台
+- **智能工作流**：为各种场景提供可定制的自动化流程
+- **实时监控**：跟踪和管理自动化进程
+- **热重载**：支持 HRM 的开发友好架构
 
-## Quick Start
+## 快速开始
 
-### Configuration
+### 配置
 
-Configure the server with your platform credentials:
+使用您的平台凭证配置服务器：
 
 ```json
 {
@@ -34,78 +34,68 @@ Configure the server with your platform credentials:
       "command": "npx",
       "args": ["-y", "@code-sugar/mcp-server-routine-bot@latest"],
       "env": {
-        "TAPD_NICK": "your_tapd_nickname",
-        "TAPD_GROUP_NICKS": "nickname|nickname|nickname",
-        "TAPD_DEFAULT_WORKSPACE_ID": "your_tapd_default_workspace_id",
-        "TAPD_BASE_URL": "https://api.tapd.cn",
-        "TAPD_ACCESS_TOKEN": "your_tapd_access_token",
-        "JENKINS_BASE_URL": "your_jenkins_base_url",
-        "JENKINS_USERNAME": "your_jenkins_username",
-        "JENKINS_ACCESS_TOKEN": "your_jenkins_access_token",
-        "GITLAB_BASE_URL": "your_gitlab_base_url",
-        "GITLAB_ACCESS_TOKEN": "your_gitlab_access_token"
+        "JENKINS_BASE_URL": "jenkins_base_url",
+        "JENKINS_USERNAME": "jenkins_username",
+        "JENKINS_ACCESS_TOKEN": "jenkins_access_token",
+        "GITLAB_BASE_URL": "gitlab_base_url",
+        "GITLAB_ACCESS_TOKEN": "gitlab_access_token"
       }
     }
   }
 }
 ```
 
-### Environment Variables
+### 环境变量
 
-| Variable                    | Required | Default               | Description                    |
-| --------------------------- | -------- | --------------------- | ------------------------------ |
-| `TAPD_NICK`                 | ✅       | -                     | Your TAPD account nickname     |
-| `TAPD_GROUP_NICKS`          | ❌       | -                     | Your TAPD group nicknames      |
-| `TAPD_DEFAULT_WORKSPACE_ID` | ❌       | -                     | Your TAPD default workspace_id |
-| `TAPD_BASE_URL`             | ❌       | `https://api.tapd.cn` | TAPD API base URL              |
-| `TAPD_ACCESS_TOKEN`         | ✅       | -                     | TAPD API access token          |
-| `JENKINS_BASE_URL`          | ✅       | -                     | Jenkins server base URL        |
-| `JENKINS_USERNAME`          | ✅       | -                     | Jenkins username               |
-| `JENKINS_ACCESS_TOKEN`      | ✅       | -                     | Jenkins API access token       |
-| `GITLAB_BASE_URL`           | ✅       | -                     | Gitlab API base URL            |
-| `GITLAB_ACCESS_TOKEN`       | ✅       | -                     | Gitlab API access token        |
+| 变量名                   | 必需 | 默认值 | 说明                    |
+| ----------------------- | ---- | ------ | ----------------------- |
+| `JENKINS_BASE_URL`     | ✅   | -      | Jenkins 服务器基础地址  |
+| `JENKINS_USERNAME`     | ✅   | -      | Jenkins 用户名          |
+| `JENKINS_ACCESS_TOKEN` | ✅   | -      | Jenkins API 访问令牌    |
+| `GITLAB_BASE_URL`      | ✅   | -      | GitLab API 基础地址     |
+| `GITLAB_ACCESS_TOKEN`  | ✅   | -      | GitLab API 访问令牌     |
 
-## Development Guide
+## 开发指南
 
-### Prerequisites
+### 环境要求
 
 - Node.js >= 18
-- npm or yarn
+- npm 或 yarn
 
-### Setup
+### 安装设置
 
-1. Clone the repository:
+1. 克隆仓库：
 
    ```bash
    git clone https://github.com/PassionZale/mcp-server-routine-bot.git
    cd mcp-server-routine-bot
    ```
 
-2. Install dependencies:
+2. 安装依赖：
 
    ```bash
    npm install
    ```
 
-3. Create environment configuration:
+3. 创建环境配置：
    ```bash
    cp .env.example .env
-   # Edit .env with your credentials
+   # 编辑 .env 文件填入凭证信息
    ```
 
-### Development Modes
+### 开发模式
 
-#### Option 1: MCP Inspector (No HRM)
+#### 方式 1：MCP Inspector（无热重载）
 
-For debugging and inspection:
+用于调试和检查：
 
-1. Start development server:
+1. 启动开发服务器：
 
    ```bash
    npm run inspector
    ```
 
-2. Configure your MCP client:
+2. 配置 MCP 客户端：
    ```json
    {
      "mcpServers": {
@@ -113,45 +103,40 @@ For debugging and inspection:
          "command": "node",
          "args": ["/path/to/your/mcp-server-routine-bot/dist/index.js"],
          "env": {
-           "TAPD_NICK": "your_tapd_nickname",
-           "TAPD_GROUP_NICKS": "nickname|nickname|nickname",
-           "TAPD_DEFAULT_WORKSPACE_ID": "your_tapd_default_workspace_id",
-           "TAPD_BASE_URL": "https://api.tapd.cn",
-           "TAPD_ACCESS_TOKEN": "your_tapd_access_token",
-           "JENKINS_BASE_URL": "your_jenkins_base_url",
-           "JENKINS_USERNAME": "your_jenkins_username",
-           "JENKINS_ACCESS_TOKEN": "your_jenkins_access_token",
-           "GITLAB_BASE_URL": "your_gitlab_base_url",
-           "GITLAB_ACCESS_TOKEN": "your_gitlab_access_token"
+           "JENKINS_BASE_URL": "jenkins_base_url",
+           "JENKINS_USERNAME": "jenkins_username",
+           "JENKINS_ACCESS_TOKEN": "jenkins_access_token",
+           "GITLAB_BASE_URL": "gitlab_base_url",
+           "GITLAB_ACCESS_TOKEN": "gitlab_access_token"
          }
        }
      }
    }
    ```
 
-**Note**:
+**注意**：
 
-- The inspector command automatically reads environment variables from the `.env` file
-- Changes to `src/index.ts` and `src/server.ts` require manual server restart
-- Changes to other files require re-running the inspector command
+- inspector 命令会自动从 `.env` 文件读取环境变量
+- 修改 `src/index.ts` 和 `src/server.ts` 需要手动重启服务器
+- 修改其他文件需要重新运行 inspector 命令
 
-#### Option 2: Reloaderoo (With HRM)
+#### 方式 2：Reloaderoo（支持热重载）
 
-For development with Hot Reload support:
+用于支持热重载的开发：
 
-1. Install reloaderoo globally:
+1. 全局安装 reloaderoo：
 
    ```bash
    npm install -g reloaderoo
    ```
 
-2. Start development server:
+2. 启动开发服务器：
 
    ```bash
    npm run build:watch
    ```
 
-3. Configure your MCP client:
+3. 配置 MCP 客户端：
    ```json
    {
      "mcpServers": {
@@ -166,61 +151,56 @@ For development with Hot Reload support:
            "/path/to/your/mcp-server-routine-bot/dist/index.js"
          ],
          "env": {
-           "TAPD_NICK": "your_tapd_nickname",
-           "TAPD_GROUP_NICKS": "nickname|nickname|nickname",
-           "TAPD_DEFAULT_WORKSPACE_ID": "your_tapd_default_workspace_id",
-           "TAPD_BASE_URL": "https://api.tapd.cn",
-           "TAPD_ACCESS_TOKEN": "your_tapd_access_token",
-           "JENKINS_BASE_URL": "your_jenkins_base_url",
-           "JENKINS_USERNAME": "your_jenkins_username",
-           "JENKINS_ACCESS_TOKEN": "your_jenkins_access_token",
-           "GITLAB_BASE_URL": "your_gitlab_base_url",
-           "GITLAB_ACCESS_TOKEN": "your_gitlab_access_token"
+           "JENKINS_BASE_URL": "jenkins_base_url",
+           "JENKINS_USERNAME": "jenkins_username",
+           "JENKINS_ACCESS_TOKEN": "jenkins_access_token",
+           "GITLAB_BASE_URL": "gitlab_base_url",
+           "GITLAB_ACCESS_TOKEN": "gitlab_access_token"
          }
        }
      }
    }
    ```
 
-### Building for Production
+### 生产构建
 
 ```bash
 npm run build
 ```
 
-The compiled output will be available in the `dist/` directory.
+编译后的文件将在 `dist/` 目录中。
 
-## Troubleshooting
+## 故障排除
 
-### Common Issues
+### 常见问题
 
-1. **Server not responding**: Ensure all required environment variables are set
-2. **Authentication errors**: Verify your access tokens are valid and have proper permissions
-3. **Connection timeouts**: Check network connectivity to your configured services
+1. **服务器无响应**：确保所有必需的环境变量都已设置
+2. **认证错误**：验证访问令牌是否有效且具有适当权限
+3. **连接超时**：检查到配置服务的网络连接
 
-### Debugging
+### 调试
 
-Enable debug logging by setting the log level:
+通过设置日志级别启用调试日志：
 
 ```bash
-# When using reloaderoo
+# 使用 reloaderoo 时
 reloaderoo proxy log-level debug -- node dist/index.js
 ```
 
-## Contributing
+## 贡献
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+1. Fork 仓库
+2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 打开 Pull Request
 
-## License
+## 许可证
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+本项目基于 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
 
-## Author
+## 作者
 
 Lei Zhang - [@PassionZale](https://github.com/PassionZale)
 
-Project Link: [https://github.com/PassionZale/mcp-server-routine-bot](https://github.com/PassionZale/mcp-server-routine-bot)
+项目链接：[https://github.com/PassionZale/mcp-server-routine-bot](https://github.com/PassionZale/mcp-server-routine-bot)
