@@ -11,7 +11,7 @@ class AppConfig {
     this.jenkins_username = process.env.JENKINS_USERNAME || "";
     this.jenkins_access_token = process.env.JENKINS_ACCESS_TOKEN || "";
 
-    this.gitlab_base_url = process.env.GITLAB_BASE_URL || "https://gitlab.com";
+    this.gitlab_base_url = process.env.GITLAB_BASE_URL || '';
     this.gitlab_access_token = process.env.GITLAB_ACCESS_TOKEN || "";
   }
 
