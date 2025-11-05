@@ -1,5 +1,6 @@
 export enum GitlabToolNames {
   GITLAB_CREATE_MERGE_REQUEST = "gitlab_create_merge_request",
+  GITLAB_MERGE_MERGE_REQUEST = "gitlab_merge_merge_request",
 }
 
 export interface GitlabProject {

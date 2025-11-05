@@ -21,6 +21,47 @@ MCP-Server-Routine-Bot 基于模型上下文协议（MCP）框架构建，是我
 - **实时监控**：跟踪和管理自动化进程
 - **热重载**：支持 HRM 的开发友好架构
 
+## 可用工具
+
+### Jenkins 工具
+| 工具名称 | 描述 | 参数 |
+|---------|------|------|
+| `jenkins_job_list` | 获取 Jenkins 中的所有作业列表 | 无 |
+| `jenkins_job_build` | 触发指定 Jenkins 作业的构建 | `jobName` (必需) |
+
+### GitLab 工具
+| 工具名称 | 描述 | 参数 |
+|---------|------|------|
+| `gitlab_create_merge_request` | 在 GitLab 中创建合并请求 | `projectId`, `projectName`, `sourceBranch`, `targetBranch` |
+| `gitlab_merge_merge_request` | 在 GitLab 中合并指定的合并请求 | `projectId` (必需), `mergeRequestIid` (必需) |
+
+### 使用示例
+
+#### Jenkins 操作
+```bash
+# 获取作业列表
+jenkins_job_list
+
+# 构建指定作业
+jenkins_job_build({"jobName": "my-project"})
+```
+
+#### GitLab 操作
+```bash
+# 创建合并请求
+gitlab_create_merge_request({
+  "projectName": "my-project",
+  "sourceBranch": "feature-branch",
+  "targetBranch": "main"
+})
+
+# 合并指定的合并请求（使用创建时返回的 IID）
+gitlab_merge_merge_request({
+  "projectId": 123,
+  "mergeRequestIid": 456
+})
+```
+
 ## 快速开始
 
 ### 配置

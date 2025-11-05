@@ -192,6 +192,9 @@ class MCPServer {
         case GitlabToolNames.GITLAB_CREATE_MERGE_REQUEST:
           return await this.handleGitlabCreateMergeRequest(args);
 
+        case GitlabToolNames.GITLAB_MERGE_MERGE_REQUEST:
+          return await this.handleGitlabMergeMergeRequest(args);
+
         default:
           throw new Error(`Tool ${toolName} not implemented`);
       }
@@ -245,19 +248,43 @@ class MCPServer {
     };
   }
 
+  private async handleGitlabMergeMergeRequest(args: {
+    projectId: number;
+    mergeRequestIid: number;
+  }) {
+    const { projectId, mergeRequestIid } = args;
+
+    // === 1.等待 MR 变为可合并状态 ===
+    await waitForMergeability(projectId, mergeRequestIid);
+
+    // === 2.合并 MR ===
+    const mergedMr = await makeGitlabRequest<GitlabMergeRequest>(
+      "PUT",
+      `projects/${projectId}/merge_requests/${mergeRequestIid}/merge`
+    );
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: `✅ Merge Request 已合并。\n详情链接：${mergedMr.web_url}`,
+        },
+      ],
+      isError: false,
+    };
+  }
+
   private async handleGitlabCreateMergeRequest(args: {
     projectId?: string;
     projectName?: string;
     sourceBranch?: string;
     targetBranch?: string;
-    autoMerge?: boolean;
   }) {
     let {
       projectId,
       projectName,
       sourceBranch,
       targetBranch,
-      autoMerge = false,
     } = args;
 
     let project: GitlabProject | null = null;
@@ -295,9 +322,7 @@ class MCPServer {
               text:
                 `找到多个项目，请选择一个：\n` +
                 projects
-                  .map(
-                    (p, i) => `${p.id}: ${p.name_with_namespace} (${p.web_url})`
-                  )
+                  .map((p) => `${p.id}: ${p.name_with_namespace} (${p.web_url})`)
                   .join("\n"),
             },
           ],
@@ -318,7 +343,7 @@ class MCPServer {
       targetBranch = project.default_branch || "main";
     }
 
-    // === 1.创建 MR ===
+    // === 创建 MR ===
     const mr = await makeGitlabRequest<GitlabMergeRequest>(
       "POST",
       `projects/${project.id}/merge_requests`,
@@ -331,36 +356,15 @@ class MCPServer {
       }
     );
 
-    if (autoMerge === true) {
-      // === 2.等待 MR 变为可合并状态 ===
-      await waitForMergeability(projectId!, mr.iid);
-
-      // === 3.合并 MR ===
-      await makeGitlabRequest<GitlabMergeRequest>(
-        "PUT",
-        `projects/${project.id}/merge_requests/${mr.iid}/merge`
-      );
-
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Merge Request 已创建并自动合并。\n详情链接：${mr.web_url}`,
-          },
-        ],
-        isError: false,
-      };
-    } else {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Merge Request 已创建。\n详情链接：${mr.web_url}`,
-          },
-        ],
-        isError: false,
-      };
-    }
+    return {
+      content: [
+        {
+          type: "text",
+          text: `✅ Merge Request 已创建。\n详情链接：${mr.web_url}\nMR IID: ${mr.iid}`,
+        },
+      ],
+      isError: false,
+    };
   }
 }
 
