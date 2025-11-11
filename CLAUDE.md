@@ -84,18 +84,79 @@ npm run release
 - Jenkins: Basic Auth using username and access token
 - GitLab: Bearer token using `PRIVATE-TOKEN` header
 
+### Fetch Tools
+- **fetch_html**: 获取网页原始 HTML 内容
+- **fetch_json**: 抓取并解析 JSON 文件
+- **fetch_txt**: 获取纯文本内容（移除HTML标签、脚本和样式）
+- **fetch_markdown**: 将网页内容转换为 Markdown 格式
+
+### Proxy Support
+所有 fetch 工具都支持通过环境变量配置代理：
+- **HTTP_PROXY / http_proxy**: HTTP 代理服务器
+- **HTTPS_PROXY / https_proxy**: HTTPS 代理服务器
+- 支持带认证的代理格式：`http://username:password@proxy:port`
+- 按优先级自动选择第一个可用的代理配置
+
 ### Error Handling
 - Custom error creation with `createRoutineBotError()`
 - HTTP status code propagation
 - Structured error responses for MCP clients
+- Proxy connection error handling and validation
 
 ## Environment Setup
 
 Create `.env` file with:
 ```
+# Jenkins 配置
 JENKINS_BASE_URL=your_jenkins_url
 JENKINS_USERNAME=your_username
 JENKINS_ACCESS_TOKEN=your_token
+
+# GitLab 配置
 GITLAB_BASE_URL=your_gitlab_url
 GITLAB_ACCESS_TOKEN=your_token
+
+# 代理配置（可选）
+HTTP_PROXY=http://proxy.example.com:8080
+HTTPS_PROXY=https://proxy.example.com:8080
+# 或带认证的代理：
+# HTTP_PROXY=http://username:password@proxy.example.com:8080
 ```
+
+## Proxy Usage Guide
+
+### 代理配置示例
+
+#### 基本代理配置
+```bash
+export HTTP_PROXY=http://proxy.company.com:8080
+export HTTPS_PROXY=https://proxy.company.com:8080
+```
+
+#### 带认证的代理配置
+```bash
+export HTTP_PROXY=http://username:password@proxy.company.com:8080
+export HTTPS_PROXY=https://username:password@proxy.company.com:8080
+```
+
+#### SOCKS 代理（需要额外配置）
+```bash
+# 注意：当前实现支持 HTTP/HTTPS 代理，SOCKS 代理需要第三方库
+export HTTP_PROXY=socks5://proxy.company.com:1080
+```
+
+### 测试代理配置
+使用 fetch 工具测试代理是否工作：
+```javascript
+// 在 MCP Inspector 中测试
+fetch_html({
+  url: "https://httpbin.org/ip",
+  headers: {},
+  max_length: 1000
+})
+```
+
+### 故障排除
+- 如果代理不可用，工具会自动回退到直连
+- 代理 URL 格式错误时会抛出具体错误信息
+- 查看控制台日志了解代理使用情况

@@ -18,6 +18,7 @@ import {
   GitlabMergeRequest,
 } from "./tools/gitlab/types.js";
 import { GITLAB_TOOL_DEFINITIONS } from "./tools/gitlab/index.js";
+import { Fetcher, FetchToolNames, FETCH_TOOL_DEFINITIONS } from "./tools/fetch/index.js";
 import { createRoutineBotError } from "./common/errors.js";
 import { waitForMergeability } from "./common/gitlab/merge.js";
 
@@ -63,7 +64,7 @@ class MCPServer {
     this.server = new Server(
       {
         name: "mcp-server-routine-bot",
-        version: "1.1.0",
+        version: "1.2.0",
       },
       {
         capabilities: {
@@ -149,6 +150,7 @@ class MCPServer {
       tools: [
         ...Object.values(JENKINS_TOOL_DEFINITIONS),
         ...Object.values(GITLAB_TOOL_DEFINITIONS),
+        ...Object.values(FETCH_TOOL_DEFINITIONS),
       ],
     }));
 
@@ -158,7 +160,8 @@ class MCPServer {
 
       return this.executeTool(
         name as JenkinsToolNames &
-          GitlabToolNames,
+          GitlabToolNames &
+          FetchToolNames,
         args
       );
     });
@@ -178,7 +181,8 @@ class MCPServer {
 
   private async executeTool(
     toolName: JenkinsToolNames &
-      GitlabToolNames,
+      GitlabToolNames &
+      FetchToolNames,
     args: any
   ) {
     try {
@@ -194,6 +198,18 @@ class MCPServer {
 
         case GitlabToolNames.GITLAB_MERGE_MERGE_REQUEST:
           return await this.handleGitlabMergeMergeRequest(args);
+
+        case FetchToolNames.FETCH_HTML:
+          return await this.handleFetchHtml(args);
+
+        case FetchToolNames.FETCH_JSON:
+          return await this.handleFetchJson(args);
+
+        case FetchToolNames.FETCH_TXT:
+          return await this.handleFetchTxt(args);
+
+        case FetchToolNames.FETCH_MARKDOWN:
+          return await this.handleFetchMarkdown(args);
 
         default:
           throw new Error(`Tool ${toolName} not implemented`);
@@ -365,6 +381,23 @@ class MCPServer {
       ],
       isError: false,
     };
+  }
+
+  // Fetch 工具处理方法
+  private async handleFetchHtml(args: any): Promise<any> {
+    return await Fetcher.fetchHtml(args);
+  }
+
+  private async handleFetchJson(args: any): Promise<any> {
+    return await Fetcher.fetchJson(args);
+  }
+
+  private async handleFetchTxt(args: any): Promise<any> {
+    return await Fetcher.fetchTxt(args);
+  }
+
+  private async handleFetchMarkdown(args: any): Promise<any> {
+    return await Fetcher.fetchMarkdown(args);
   }
 }
 
