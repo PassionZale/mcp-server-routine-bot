@@ -16,8 +16,9 @@ MCP-Server-Routine-Bot 基于模型上下文协议（MCP）框架构建，是我
 ### 主要特性
 
 - **任务自动化**：自动处理重复的日常操作
-- **工具集成**：原生支持 Jenkins 和 GitLab 平台
+- **工具集成**：原生支持 Jenkins、GitLab 和网页抓取功能
 - **智能工作流**：为各种场景提供可定制的自动化流程
+- **网络代理支持**：内置企业级代理配置功能
 - **实时监控**：跟踪和管理自动化进程
 - **热重载**：支持 HRM 的开发友好架构
 
@@ -34,6 +35,14 @@ MCP-Server-Routine-Bot 基于模型上下文协议（MCP）框架构建，是我
 |---------|------|------|
 | `gitlab_create_merge_request` | 在 GitLab 中创建合并请求 | `projectId`, `projectName`, `sourceBranch`, `targetBranch` |
 | `gitlab_merge_merge_request` | 在 GitLab 中合并指定的合并请求 | `projectId` (必需), `mergeRequestIid` (必需) |
+
+### 网页抓取工具
+| 工具名称 | 描述 | 参数 |
+|---------|------|------|
+| `fetch_html` | 获取网页原始 HTML 内容 | `url` (必需), `headers`, `max_length`, `start_index` |
+| `fetch_json` | 抓取并解析 JSON 文件 | `url` (必需), `headers`, `max_length`, `start_index` |
+| `fetch_txt` | 获取纯文本内容（移除HTML标签） | `url` (必需), `headers`, `max_length`, `start_index` |
+| `fetch_markdown` | 将网页内容转换为 Markdown 格式 | `url` (必需), `headers`, `max_length`, `start_index` |
 
 ### 使用示例
 
@@ -62,6 +71,36 @@ gitlab_merge_merge_request({
 })
 ```
 
+#### 网页抓取操作
+```bash
+# 获取网页 HTML 内容
+fetch_html({
+  "url": "https://example.com",
+  "max_length": 5000
+})
+
+# 抓取 JSON 文件
+fetch_json({
+  "url": "https://api.example.com/data.json",
+  "headers": {
+    "Authorization": "Bearer token"
+  }
+})
+
+# 获取纯文本内容
+fetch_txt({
+  "url": "https://example.com/article.html",
+  "start_index": 100,
+  "max_length": 2000
+})
+
+# 转换为 Markdown
+fetch_markdown({
+  "url": "https://example.com/documentation.html",
+  "max_length": 10000
+})
+```
+
 ## 快速开始
 
 ### 配置
@@ -79,7 +118,9 @@ gitlab_merge_merge_request({
         "JENKINS_USERNAME": "jenkins_username",
         "JENKINS_ACCESS_TOKEN": "jenkins_access_token",
         "GITLAB_BASE_URL": "gitlab_base_url",
-        "GITLAB_ACCESS_TOKEN": "gitlab_access_token"
+        "GITLAB_ACCESS_TOKEN": "gitlab_access_token",
+        "HTTP_PROXY": "http://proxy.example.com:8080",
+        "HTTPS_PROXY": "https://proxy.example.com:8080"
       }
     }
   }
@@ -95,6 +136,24 @@ gitlab_merge_merge_request({
 | `JENKINS_ACCESS_TOKEN` | ✅   | -      | Jenkins API 访问令牌    |
 | `GITLAB_BASE_URL`      | ✅   | -      | GitLab API 基础地址     |
 | `GITLAB_ACCESS_TOKEN`  | ✅   | -      | GitLab API 访问令牌     |
+| `HTTP_PROXY`           | ❌   | -      | HTTP 代理服务器地址     |
+| `HTTPS_PROXY`          | ❌   | -      | HTTPS 代理服务器地址    |
+
+#### 代理配置说明
+
+网页抓取工具支持通过环境变量配置代理，适用于企业网络环境：
+
+```bash
+# 基本代理配置
+export HTTP_PROXY=http://proxy.company.com:8080
+export HTTPS_PROXY=https://proxy.company.com:8080
+
+# 带认证的代理配置
+export HTTP_PROXY=http://username:password@proxy.company.com:8080
+export HTTPS_PROXY=https://username:password@proxy.company.com:8080
+```
+
+**代理优先级**：`HTTPS_PROXY` > `https_proxy` > `HTTP_PROXY` > `http_proxy`
 
 ## 开发指南
 
@@ -148,7 +207,9 @@ gitlab_merge_merge_request({
            "JENKINS_USERNAME": "jenkins_username",
            "JENKINS_ACCESS_TOKEN": "jenkins_access_token",
            "GITLAB_BASE_URL": "gitlab_base_url",
-           "GITLAB_ACCESS_TOKEN": "gitlab_access_token"
+           "GITLAB_ACCESS_TOKEN": "gitlab_access_token",
+           "HTTP_PROXY": "http://proxy.example.com:8080",
+           "HTTPS_PROXY": "https://proxy.example.com:8080"
          }
        }
      }
@@ -196,7 +257,9 @@ gitlab_merge_merge_request({
            "JENKINS_USERNAME": "jenkins_username",
            "JENKINS_ACCESS_TOKEN": "jenkins_access_token",
            "GITLAB_BASE_URL": "gitlab_base_url",
-           "GITLAB_ACCESS_TOKEN": "gitlab_access_token"
+           "GITLAB_ACCESS_TOKEN": "gitlab_access_token",
+           "HTTP_PROXY": "http://proxy.example.com:8080",
+           "HTTPS_PROXY": "https://proxy.example.com:8080"
          }
        }
      }
@@ -218,6 +281,8 @@ npm run build
 1. **服务器无响应**：确保所有必需的环境变量都已设置
 2. **认证错误**：验证访问令牌是否有效且具有适当权限
 3. **连接超时**：检查到配置服务的网络连接
+4. **代理连接失败**：验证代理 URL 格式正确且代理服务可访问
+5. **网页抓取失败**：检查目标 URL 是否可访问，网络连接是否正常
 
 ### 调试
 
